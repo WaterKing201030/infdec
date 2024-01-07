@@ -404,14 +404,44 @@ theorem not_lt_ε(x:Digits):¬x <L ε:=by{
   | _::_ => simp[lt]
 }
 
-theorem le_ε_is_ε{x:Digits}(h:x ≤L ε):x =L ε:=by{
+theorem ε_lt_not_ε{x:Digits}(h:x≠ε):ε<Lx:=by{
+  have h:ε≠Lx:=by{
+    apply ne.intro
+    intro h
+    have h:=ε_unique h.symm
+    contradiction
+  }
+  exact lt_of_le_of_ne (ε_le _) h
+}
+
+theorem le_ε_eq_ε{x:Digits}(h:x ≤L ε):x =L ε:=by{
   rw[le_iff_eq_or_lt] at h
   simp[not_lt_ε] at h
   exact h
 }
-end zero
-end len
 
+theorem le_ε_is_ε{x:Digits}(h:x ≤L ε):x = ε:=
+  ε_unique (le_ε_eq_ε h)
+end zero
+section step
+theorem lt_cons(x:Digits)(d:Digit):x <L x::d:=by{
+  induction x generalizing d with
+  | nil => simp[lt]
+  | cons xs xd ih => simp[lt]; exact ih xd
+}
+
+theorem le_cons(x:Digits)(d:Digit):x ≤L x::d:=
+  (lt_cons x d).to_le
+end step
+theorem eq.from_strict_eq{x y:Digits}(h:x = y):x =L y:=by{
+  simp[h,eq.refl]
+}
+theorem ne.to_strict_ne{x y:Digits}(h:x ≠L y):x ≠ y:=by{
+  intro h'
+  rw[h'] at h
+  simp[ne.irrefl] at h
+}
+end len
 end Digits
 
 end wkmath

@@ -6,6 +6,10 @@ inductive Digit
   | one
   | two
 
+notation:1025 " (0) " => Digit.zero
+notation:1025 " (1) " => Digit.one
+notation:1025 " (2) " => Digit.two
+
 namespace Digit
 
 def toString:Digit → String
@@ -35,7 +39,7 @@ inductive Digits
   | cons : Digits → Digit → Digits
 
 notation:1025 " ε " => Digits.nil
-infixr:67 " :: " => Digits.cons
+infixl:67 " :: " => Digits.cons
 
 namespace Digits
 
