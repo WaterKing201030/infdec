@@ -441,6 +441,31 @@ theorem ne.to_strict_ne{x y:Digits}(h:x ≠L y):x ≠ y:=by{
   rw[h'] at h
   simp[ne.irrefl] at h
 }
+
+theorem quot_ind{P:Digits → Sort u}(h:∀(y x:Digits),x =L y→P x)(x:Digits):P x:=
+  h x x (eq.refl x)
+
+theorem induction.{u}
+  {P : Digits → Sort u}
+  (x : Digits)
+  (base : P nil)
+  (ind : ∀(y:Digits)(d:Digit),(∀(x:Digits),x =L y→P x)→(∀(x:Digits),x =L (y.cons d)→P x))
+  : P x := by{
+    have h0:∀(x:Digits), x =L nil→P x:=by{
+      intro x' he
+      have he:=ε_unique he
+      rw[he]
+      exact base
+    }
+    have h1:∀(y x:Digits), x =L y→P x:=by{
+      intro y'
+      induction y' with
+      | nil => exact h0
+      | cons ny' d' ih => exact ind ny' d' ih
+    }
+    exact quot_ind h1 x
+  }
+
 end len
 end Digits
 
