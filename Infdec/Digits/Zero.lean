@@ -85,5 +85,12 @@ theorem zero_triple_isZero{x:Digits}(h:x.isZero):x.triple.isZero:=
 
 theorem ε_isZero:(ε).isZero:=by simp[isZero]
 
+theorem isZero.len_unique{x y:Digits}(hx:x.isZero)(hy:y.isZero)(h:x =L y):x=y:=by{
+  have hx:=zero_toZero_eq hx
+  have hy:=zero_toZero_eq hy
+  rw[←hx,←hy]
+  exact toZero_eq_of_len_eq h
+}
+
 end Digits
 end wkmath
