@@ -22,6 +22,14 @@ def isZero:Digits → Prop
   | ε => True
   | x::d => x.isZero ∧ d=(0)
 
+@[inline] instance isZero.instDecidable{x:Digits}:Decidable (x.isZero):=
+  match x with
+  | ε => by simp[isZero]; exact instDecidableTrue
+  | xs::xd => by
+    simp[isZero]
+    have : Decidable (xs.isZero) := instDecidable
+    exact instDecidableAnd
+
 theorem toZero_eq_of_len_eq{x y:Digits}(h:x =L y):x.toZero = y.toZero:=by{
   match x, y with
   | _, ε => have h:=len.ε_unique h; rw[h]
@@ -74,6 +82,8 @@ theorem zero_double_isZero{x:Digits}(h:x.isZero):x.double.isZero:=
 
 theorem zero_triple_isZero{x:Digits}(h:x.isZero):x.triple.isZero:=
   zero_append_zero_isZero (zero_double_isZero h) h
+
+theorem ε_isZero:(ε).isZero:=by simp[isZero]
 
 end Digits
 end wkmath
