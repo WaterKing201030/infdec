@@ -71,6 +71,15 @@ theorem nat_eq_zero_isZero{x y:Digits}(h:x =N y)(hx:x.isZero):y.isZero:=by{
 theorem nat_eq_zero_isZero'{x y:Digits}(h:x =N y)(hy:y.isZero):x.isZero:=
   nat_eq_zero_isZero h.symm hy
 
+theorem nat_eq_not_zero_isnot_zero{x y:Digits}(hx:¬x.isZero)(h:x =N y):¬y.isZero:=by{
+  intro h'
+  apply hx
+  exact nat_eq_zero_isZero' h h'
+}
+
+theorem nat_eq_not_zero_isnot_zero'{x y:Digits}(hx:¬y.isZero)(h:x =N y):¬x.isZero:=
+  nat_eq_not_zero_isnot_zero hx h.symm
+
 theorem nat.eq.trans{x y z:Digits}(h0:x =N y)(h1:y =N z):x =N z:=by{
   match x, y, z with
   | ε, _, _ => {
@@ -88,7 +97,7 @@ theorem nat.eq.trans{x y z:Digits}(h0:x =N y)(h1:y =N z):x =N z:=by{
   }
 }
 
-theorem nat.eq.zero_head(x:Digits):ε::(0) :+ x =N x:=by{
+theorem nat.eq.zero_head(x:Digits):ε::(0) ++ x =N x:=by{
   induction x with
   | nil => simp
   | cons x' d ih => {
@@ -99,13 +108,13 @@ theorem nat.eq.zero_head(x:Digits):ε::(0) :+ x =N x:=by{
   }
 }
 
-theorem nat.eq.zero_append{x:Digits}(h:x.isZero)(y:Digits):x:+y =N y:=by{
+theorem nat.eq.zero_append{x:Digits}(h:x.isZero)(y:Digits):x++y =N y:=by{
   induction x generalizing y with
   | nil => simp; exact eq.refl y
   | cons x' d ih => {
     rw[isZero] at h
     rw[←append_tail, append.assoc]
-    have h0:=ih h.left (ε::d :+ y)
+    have h0:=ih h.left (ε::d ++ y)
     have h1:=zero_head y
     rw[h.right] at h0
     rw[h.right]

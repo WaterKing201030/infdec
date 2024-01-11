@@ -68,7 +68,7 @@ theorem zero_toZero_eq{x:Digits}(h:x.isZero):x.toZero = x:=by{
   }
 }
 
-theorem zero_append_zero_isZero{x y:Digits}(hx:x.isZero)(hy:y.isZero):(x:+y).isZero:=by{
+theorem zero_append_zero_isZero{x y:Digits}(hx:x.isZero)(hy:y.isZero):(x++y).isZero:=by{
   induction y with
   | nil => simp[hx]
   | cons ys yd ih => {
