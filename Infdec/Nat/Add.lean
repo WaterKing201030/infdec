@@ -88,52 +88,6 @@ theorem add''.not_ε''{x:Digits}{d:Digit}(h:d≠(0)):x.add'' d≠ε:=by{
   have h':=not_ε h'
   exact h h'.right
 }
-/-
-theorem add''.add_notzero_lt(x:Digits){d:Digit}(h:d ≠ (0)):x < x.add'' d:=by{
-  match x with
-  | ε => match d with | (0) | (1) | (2) => simp at *
-  | x'::xd => {
-    match xd, d with
-    | (0), (0)
-    | (1), (0)
-    | (2), (0) => contradiction
-    | (0), (1)
-    | (0), (2)
-    | (1), (1) => {
-      simp[add'', Digit.half_add3, nat.lt]
-      exact Or.inr (nat.eq.refl _)
-    }
-    | (1), (2)
-    | (2), (1)
-    | (2), (2) => {
-      simp[add'', Digit.half_add3, nat.lt]
-      exact add_notzero_lt _ (1).noConfusion
-    }
-  }
-}
-
-theorem add''.add_le(x:Digits)(d:Digit):x ≤ x.add'' d:=by{
-  match x with
-  | ε => match d with | (0) | (1) | (2) => simp
-  | x'::xd => {
-    match xd, d with
-    | (0), (0)
-    | (0), (1)
-    | (0), (2)
-    | (1), (0)
-    | (1), (1)
-    | (2), (0) => {
-      simp[add'', Digit.half_add3, nat.le]
-      exact Or.inr (nat.eq.refl _)
-    }
-    | (1), (2)
-    | (2), (1)
-    | (2), (2) => {
-      simp[add'', Digit.half_add3, nat.le]
-      exact add_notzero_lt _ (1).noConfusion
-    }
-  }
-}-/
 end add''_property
 
 def add'(x y:Digits)(c:Digit):Digits:=
