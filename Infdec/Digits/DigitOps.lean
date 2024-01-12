@@ -1965,7 +1965,12 @@ theorem half_add3.one_one_eq_zero_two(a:Digit):half_add3 a (1) (1) = half_add3 a
   | (0)
   | (1)
   | (2) => rfl
-end add_properties
 
+theorem half_add3.add_zero_zero(a:Digit):half_add3 a (0) (0) = ((0), a):=
+  match a with
+  | (0)
+  | (1)
+  | (2) => rfl
+end add_properties
 end Digit
 end wkmath
