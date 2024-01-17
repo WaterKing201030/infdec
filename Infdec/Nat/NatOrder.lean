@@ -58,6 +58,7 @@ Things needed related to orders
   - zero_le √
   - not_lt_zero √
   - zero_lt_notzero √
+  - le_zero_isZero
 -/
 section defines
 def ne:Digits → Digits → Prop
@@ -323,6 +324,12 @@ theorem not_lt_zero(x:Digits){y:Digits}(h:y.isZero):¬x < y:=by{
 theorem lt_not_zero{x y:Digits}(h:x < y):¬y.isZero:=by{
   intro h'
   exact not_lt_zero x h' h
+}
+
+theorem le_ε_isZero{x:Digits}(h:x ≤ ε):x.isZero:=by{
+  rw[le_iff_eq_or_lt] at h
+  simp[not_lt_ε] at h
+  exact nat_eq_zero_isZero' h ε_isZero
 }
 end zero
 section properties
@@ -637,6 +644,10 @@ theorem trichotomous(x y:Digits):x < y ∨ x =N y ∨ y < x:=by{
   | inr h => apply Or.inr; apply Or.inr; exact h
 }
 end total
+
+theorem le_zero_isZero{x y:Digits}(h0:x ≤ y)(h1:y.isZero):x.isZero:=
+  le_ε_isZero (nat.le_of_le_of_eq h0 (zero_nat_eq_zero h1 ε_isZero))
+
 end nat
 end Digits
 end wkmath

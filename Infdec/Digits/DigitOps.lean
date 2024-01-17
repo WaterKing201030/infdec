@@ -193,6 +193,14 @@ theorem le.to_eq_or_lt{x y:Digit}(h:x ≤ y):x = y ∨ x < y:=by{
   | (2), (2) => simp[lt,le] at *
 }
 
+theorem le_iff_eq_or_lt{x y:Digit}:x ≤ y ↔ x = y ∨ x < y:=
+  Iff.intro le.to_eq_or_lt (by{
+    intro h
+    cases h with
+    | inl h => rw[h]; exact le.refl _
+    | inr h => exact h.to_le
+  })
+
 theorem lt.to_ne{x y:Digit}(h:x < y):x ≠ y:=by{
   match x, y with
   | (0), (0)
@@ -263,6 +271,30 @@ theorem le_of_not_gt{x y:Digit}(h:¬x < y):y ≤ x:=by{
 
 theorem le_iff_not_gt{x y:Digit}:x ≤ y ↔ ¬y < x:=
   Iff.intro le.to_not_gt le_of_not_gt
+
+theorem trichotomous(x y:Digit):x < y ∨ x = y ∨ y < x:=by{
+  cases Decidable.em (x < y) with
+  | inl h => exact Or.inl h
+  | inr h => {
+    apply Or.inr
+    have h:=(le_of_not_gt h).to_eq_or_lt
+    cases h with
+    | inl h => exact Or.inl h.symm
+    | inr h => exact Or.inr h
+  }
+}
+
+theorem le_or_gt(x y:Digit):x ≤ y ∨ y < x:=by{
+  have h:=trichotomous y x
+  cases h with
+  | inl h => exact Or.inr h
+  | inr h => {
+    apply Or.inl
+    cases h with
+    | inl h => rw[h]; exact le.refl _
+    | inr h => exact h.to_le
+  }
+}
 
 theorem zero_le(x:Digit):(0) ≤ x:=by{
   match x with
