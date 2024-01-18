@@ -117,7 +117,7 @@ theorem add'.comm(x y:Digits)(c:Digit):add' x y c = add' y x c:=by{
   }
 }
 
-private theorem add'_add''_one_zero_eq_one(x y:Digits):add' (x.add'' (1)) y (0) = add' x y (1):=by{
+theorem add'_add''_one_zero_eq_one(x y:Digits):add' (x.add'' (1)) y (0) = add' x y (1):=by{
   match x, y with
   | _, ε => simp
   | ε, _::_ => simp[add',add'',Digit.half_add3.comm12]
@@ -135,7 +135,7 @@ private theorem add'_add''_one_zero_eq_one(x y:Digits):add' (x.add'' (1)) y (0) 
   }
 }
 
-private theorem add''_add'_zero_one_eq_one(x y:Digits):add'' (add' x y (0)) (1) = add' x y (1):=by{
+theorem add''_add'_zero_one_eq_one(x y:Digits):add'' (add' x y (0)) (1) = add' x y (1):=by{
   match x, y with
   | _, ε => simp
   | ε, _::_ => simp[add',add'',Digit.half_add3.comm12, Digit.half_add3.add_zero_zero]
@@ -153,7 +153,7 @@ private theorem add''_add'_zero_one_eq_one(x y:Digits):add'' (add' x y (0)) (1) 
   }
 }
 
-private theorem add'_add''_one_one_eq_two(x y:Digits):add' (x.add'' (1)) y (1) = add' x y (2):=by{
+theorem add'_add''_one_one_eq_two(x y:Digits):add' (x.add'' (1)) y (1) = add' x y (2):=by{
   match x, y with
   | _, ε => simp; exact add''.one_one_eq_two _
   | ε, _::_ => {
@@ -177,7 +177,7 @@ private theorem add'_add''_one_one_eq_two(x y:Digits):add' (x.add'' (1)) y (1) =
   }
 }
 
-private theorem add''_add'_one_one_eq_two(x y:Digits):add'' (add' x y (1)) (1) = add' x y (2):=by{
+theorem add''_add'_one_one_eq_two(x y:Digits):add'' (add' x y (1)) (1) = add' x y (2):=by{
   match x, y with
   | _, ε => simp; exact add''.one_one_eq_two _
   | ε, _::d => {
@@ -199,7 +199,7 @@ private theorem add''_add'_one_one_eq_two(x y:Digits):add'' (add' x y (1)) (1) =
   }
 }
 
-private theorem add'_add''_carry_comm(x y:Digits)(c d:Digit):add' (x.add'' c) y d = add' (x.add'' d) y c:=by{
+theorem add'_add''_carry_comm(x y:Digits)(c d:Digit):add' (x.add'' c) y d = add' (x.add'' d) y c:=by{
   match x, y with
   | _, ε => simp; exact add''.carry_comm _ _ _
   | ε, y'::yd => {
@@ -309,7 +309,7 @@ private theorem add'_add''_carry_comm(x y:Digits)(c d:Digit):add' (x.add'' c) y 
   }
 }
 
-private theorem add''_add'_carry_comm(x y:Digits)(c d:Digit):add'' (add' x y c) d = add'' (add' x y d) c:=by{
+theorem add''_add'_carry_comm(x y:Digits)(c d:Digit):add'' (add' x y c) d = add'' (add' x y d) c:=by{
   match x, y with
   | _, ε => simp; exact add''.carry_comm _ _ _
   | ε, y'::yd => {
@@ -418,7 +418,7 @@ private theorem add''_add'_carry_comm(x y:Digits)(c d:Digit):add'' (add' x y c) 
   }
 }
 
-private theorem add'.one_zero_eq_zero_one(x y z:Digits):add' (add' x y (1)) z (0) = add' (add' x y (0)) z (1):=by{
+theorem add'.one_zero_eq_zero_one(x y z:Digits):add' (add' x y (1)) z (0) = add' (add' x y (0)) z (1):=by{
   match x, y, z with
   | _, _, ε => simp; exact (add''_add'_zero_one_eq_one _ _).symm
   | _, ε, _::_
@@ -456,12 +456,12 @@ private theorem add'.one_zero_eq_zero_one(x y z:Digits):add' (add' x y (1)) z (0
   }
 }
 
-private theorem add'.one_zero_eq_zero_one'(x y z:Digits):add' x (add' y z (1)) (0) = add' x (add' y z (0)) (1):=by{
+theorem add'.one_zero_eq_zero_one'(x y z:Digits):add' x (add' y z (1)) (0) = add' x (add' y z (0)) (1):=by{
   repeat rw[comm x]
   exact one_zero_eq_zero_one _ _ _
 }
 
-private theorem add'.one_one_eq_zero_two(x y z:Digits):add' (add' x y (1)) z (1) = add' (add' x y (0)) z (2):=by{
+theorem add'.one_one_eq_zero_two(x y z:Digits):add' (add' x y (1)) z (1) = add' (add' x y (0)) z (2):=by{
   match x, y, z with
   | _, _, ε => simp; rw[add''_add'_carry_comm _ _ (0)]; simp; exact add''_add'_one_one_eq_two _ _
   | _, ε, _::_
@@ -499,12 +499,12 @@ private theorem add'.one_one_eq_zero_two(x y z:Digits):add' (add' x y (1)) z (1)
   }
 }
 
-private theorem add'.one_one_eq_zero_two'(x y z:Digits):add' x (add' y z (1)) (1) = add' x (add' y z (0)) (2):=by{
+theorem add'.one_one_eq_zero_two'(x y z:Digits):add' x (add' y z (1)) (1) = add' x (add' y z (0)) (2):=by{
   repeat rw[comm x]
   exact one_one_eq_zero_two _ _ _
 }
 
-private theorem add'.one_one_eq_two_zero(x y z:Digits):add' (add' x y (1)) z (1) = add' (add' x y (2)) z (0):=by{
+theorem add'.one_one_eq_two_zero(x y z:Digits):add' (add' x y (1)) z (1) = add' (add' x y (2)) z (0):=by{
   match x, y, z with
   | _, _, ε => simp; exact add''_add'_one_one_eq_two _ _
   | _, ε, _::_
@@ -542,18 +542,18 @@ private theorem add'.one_one_eq_two_zero(x y z:Digits):add' (add' x y (1)) z (1)
   }
 }
 
-private theorem add'.one_one_eq_two_zero'(x y z:Digits):add' x (add' y z (1)) (1) = add' x (add' y z (2)) (0):=by{
+theorem add'.one_one_eq_two_zero'(x y z:Digits):add' x (add' y z (1)) (1) = add' x (add' y z (2)) (0):=by{
   repeat rw[comm x]
   exact one_one_eq_two_zero _ _ _
 }
 
-private theorem add'.two_zero_eq_zero_two(x y z:Digits):add' (add' x y (2)) z (0) = add' (add' x y (0)) z (2):=
+theorem add'.two_zero_eq_zero_two(x y z:Digits):add' (add' x y (2)) z (0) = add' (add' x y (0)) z (2):=
   (one_one_eq_two_zero _ _ _).symm.trans (one_one_eq_zero_two _ _ _)
 
-private theorem add'.two_zero_eq_zero_two'(x y z:Digits):add' x (add' y z (2)) (0) = add' x (add' y z (0)) (2):=
+theorem add'.two_zero_eq_zero_two'(x y z:Digits):add' x (add' y z (2)) (0) = add' x (add' y z (0)) (2):=
   (comm _ _ _).trans ((two_zero_eq_zero_two _ _ _).trans (comm _ _ _))
 
-private theorem add'.two_one_eq_one_two(x y z:Digits):add' (add' x y (2)) z (1) = add' (add' x y (1)) z (2):=by{
+theorem add'.two_one_eq_one_two(x y z:Digits):add' (add' x y (2)) z (1) = add' (add' x y (1)) z (2):=by{
   match x, y, z with
   | _, _, ε => simp; exact add''_add'_carry_comm _ _ _ _
   | _, ε, _::_
