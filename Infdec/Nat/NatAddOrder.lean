@@ -355,12 +355,8 @@ theorem nat.lt_of_lt_add''{x y:Digits}(h:x < y)(d:Digit):x.add'' d < y.add'' d:=
 
 theorem nat.le_of_le_add''{x y:Digits}(h:x ≤ y)(d:Digit):x.add'' d ≤ y.add'' d:=by{
   cases h.to_eq_or_lt with
-  | inl h => {
-    exact (eq_of_eq_add'' h _).to_le
-  }
-  | inr h => {
-    exact (lt_of_lt_add'' h _).to_le
-  }
+  | inl h => exact (eq_of_eq_add'' h _).to_le
+  | inr h => exact (lt_of_lt_add'' h _).to_le
 }
 
 theorem nat.lt_of_lt_add''_lt{x y:Digits}{c d:Digit}(h0:x < y)(h1:c < d):x.add'' c < y.add'' d:=
@@ -381,7 +377,7 @@ theorem nat.lt_of_le_add''_lt{x y:Digits}{c d:Digit}(h0:x ≤ y)(h1:c < d):x.add
 theorem nat.le_of_le_add''_le{x y:Digits}{c d:Digit}(h0:x ≤ y)(h1:c ≤ d):x.add'' c ≤ y.add'' d:=
   (le_of_add''_le x h1).trans (le_of_le_add'' h0 d)
 
-theorem nat.lt_of_lt_of_add''_right_eq{x y:Digits}{d:Digit}(h0:x.add'' d < y.add'' d):x < y:=by{
+theorem nat.add''_left_lt_of_lt{x y:Digits}{d:Digit}(h0:x.add'' d < y.add'' d):x < y:=by{
   match d with
   | (0) => simp at h0; exact h0
   | (1) => {
@@ -395,8 +391,7 @@ theorem nat.lt_of_lt_of_add''_right_eq{x y:Digits}{d:Digit}(h0:x.add'' d < y.add
   }
 }
 
-theorem nat.lt_of_lt_of_add''_left_eq{x y:Digits}{c d:Digit}(h0:x.add'' c < y.add'' d)(h1:y =N x):c < d:=by{
-  have h0:=lt_of_lt_of_eq h0 (eq_of_eq_add'' h1 d)
+theorem nat.add''_right_lt_of_lt{x:Digits}{c d:Digit}(h0:x.add'' c < x.add'' d):c < d:=by{
   cases Digit.le_or_gt d c with
   | inl h => {
     have h:=le_of_add''_le x h
@@ -406,28 +401,29 @@ theorem nat.lt_of_lt_of_add''_left_eq{x y:Digits}{c d:Digit}(h0:x.add'' c < y.ad
   | inr h => exact h
 }
 
-theorem nat.lt_of_lt_of_add''_right_gt{x y:Digits}{c d:Digit}(h0:x.add'' c < y.add'' d)(h1:d < c):x < y:=
-  lt_of_lt_of_add''_right_eq ((lt_of_add''_lt x h1).trans h0)
+theorem nat.add''_left_lt_of_lt_of_gt{x y:Digits}{c d:Digit}(h0:x.add'' c < y.add'' d)(h1:d < c):x < y:=
+  add''_left_lt_of_lt ((lt_of_add''_lt x h1).trans h0)
 
-theorem nat.lt_of_lt_of_add''_left_gt{x y:Digits}{c d:Digit}(h0:x.add'' c < y.add'' d)(h1:y < x):c < d:=
-  lt_of_lt_of_add''_left_eq (h0.trans (lt_of_lt_add'' h1 d)) (eq.refl _)
+theorem nat.add''_right_lt_of_lt_of_gt{x y:Digits}{c d:Digit}(h0:x.add'' c < y.add'' d)(h1:y < x):c < d:=
+  add''_right_lt_of_lt (h0.trans (lt_of_lt_add'' h1 d))
 
-theorem nat.lt_of_lt_of_add''_right_ge{x y:Digits}{c d:Digit}(h0:x.add'' c < y.add'' d)(h1:d ≤ c):x < y:=by{
+theorem nat.add''_left_lt_of_lt_of_ge{x y:Digits}{c d:Digit}(h0:x.add'' c < y.add'' d)(h1:d ≤ c):x < y:=by{
   cases h1.to_eq_or_lt with
-  | inl h1 => rw[h1] at h0; exact lt_of_lt_of_add''_right_eq h0
-  | inr h1 => exact lt_of_lt_of_add''_right_gt h0 h1
+  | inl h1 => rw[h1] at h0; exact add''_left_lt_of_lt h0
+  | inr h1 => exact add''_left_lt_of_lt_of_gt h0 h1
 }
 
-theorem nat.lt_of_lt_of_add''_left_ge{x y:Digits}{c d:Digit}(h0:x.add'' c < y.add'' d)(h1:y ≤ x):c < d:=
-  h1.to_eq_or_lt.elim (lt_of_lt_of_add''_left_eq h0) (lt_of_lt_of_add''_left_gt h0)
+theorem nat.add''_right_lt_of_lt_of_ge{x y:Digits}{c d:Digit}(h0:x.add'' c < y.add'' d)(h1:y ≤ x):c < d:=
+  h1.to_eq_or_lt.elim (fun (h':y =N x) => (add''_right_lt_of_lt (lt_of_eq_of_lt (eq_of_eq_add'' h' c) h0)))
+ (add''_right_lt_of_lt_of_gt h0)
 
-theorem nat.le_of_le_of_add''_right_ge{x y:Digits}{c d:Digit}(h0:x.add'' c ≤ y.add'' d)(h1:d ≤ c):x ≤ y:=by{
+theorem nat.add''_left_le_of_le_of_ge{x y:Digits}{c d:Digit}(h0:x.add'' c ≤ y.add'' d)(h1:d ≤ c):x ≤ y:=by{
   rw[le_iff_not_gt]
   intro h
   exact lt.irrefl _ (lt_of_le_of_lt h0 (lt_of_lt_add''_le h h1))
 }
 
-theorem nat.le_of_le_of_add''_left_ge{x y:Digits}{c d:Digit}(h0:x.add'' c ≤ y.add'' d)(h1:y ≤ x):c ≤ d:=by{
+theorem nat.add''_right_le_of_le_of_ge{x y:Digits}{c d:Digit}(h0:x.add'' c ≤ y.add'' d)(h1:y ≤ x):c ≤ d:=by{
   rw[Digit.le_iff_not_gt]
   intro h
   exact lt.irrefl _ (lt_of_le_of_lt h0 (lt_of_le_add''_lt h1 h))
@@ -960,9 +956,300 @@ theorem nat.lt_of_add'_left_lt{x y:Digits}(h:x < y)(z:Digits)(d:Digit):add' x z 
   repeat rw[add'.comm _ z]
   exact lt_of_add'_right_lt z h d
 }
+
+theorem nat.add'_carry_lt_of_lt{x y:Digits}{c d:Digit}(h:add' x y c < add' x y d):c < d:=by{
+  match x, y with
+  | _, ε
+  | ε, _ => simp at h; exact add''_right_lt_of_lt h
+  | xs::xd, ys::yd => {
+    match xd, yd, c, d with
+    | _, _, (0), (1)
+    | _, _, (0), (2)
+    | _, _, (1), (2) => simp
+    | (0), (0), (0), (0)
+    | (0), (0), (1), (0)
+    | (0), (0), (1), (1)
+    | (0), (0), (2), (0)
+    | (0), (0), (2), (1)
+    | (0), (0), (2), (2)
+    | (0), (1), (0), (0)
+    | (0), (1), (1), (0)
+    | (0), (1), (1), (1)
+    | (0), (1), (2), (2)
+    | (0), (2), (0), (0)
+    | (0), (2), (1), (1)
+    | (0), (2), (2), (1)
+    | (0), (2), (2), (2)
+    | (1), (0), (0), (0)
+    | (1), (0), (1), (0)
+    | (1), (0), (1), (1)
+    | (1), (0), (2), (2)
+    | (1), (1), (0), (0)
+    | (1), (1), (1), (1)
+    | (1), (1), (2), (1)
+    | (1), (1), (2), (2)
+    | (1), (2), (0), (0)
+    | (1), (2), (1), (0)
+    | (1), (2), (1), (1)
+    | (1), (2), (2), (0)
+    | (1), (2), (2), (1)
+    | (1), (2), (2), (2)
+    | (2), (0), (0), (0)
+    | (2), (0), (1), (1)
+    | (2), (0), (2), (1)
+    | (2), (0), (2), (2)
+    | (2), (1), (0), (0)
+    | (2), (1), (1), (0)
+    | (2), (1), (1), (1)
+    | (2), (1), (2), (0)
+    | (2), (1), (2), (1)
+    | (2), (1), (2), (2)
+    | (2), (2), (0), (0)
+    | (2), (2), (1), (0)
+    | (2), (2), (1), (1)
+    | (2), (2), (2), (2) => {
+      simp[add', Digit.half_add3, lt] at *
+      simp[lt.irrefl] at h
+    }
+    | (0), (1), (2), (0)
+    | (0), (1), (2), (1)
+    | (0), (2), (1), (0)
+    | (0), (2), (2), (0)
+    | (1), (0), (2), (0)
+    | (1), (0), (2), (1)
+    | (1), (1), (1), (0)
+    | (1), (1), (2), (0)
+    | (2), (0), (1), (0)
+    | (2), (0), (2), (0) => {
+      simp[add', Digit.half_add3, lt] at *
+      have h:=h.comm
+      rw[←le_iff_eq_or_lt] at h
+      rw[←add''_add'_zero_one_eq_one] at h
+      rw[←lt_iff_add''_one_le] at h
+      simp[lt.irrefl] at h
+    }
+    | (2), (2), (2), (0)
+    | (2), (2), (2), (1) => {
+      simp[add', Digit.half_add3, lt] at *
+      have h:=h.comm
+      rw[←le_iff_eq_or_lt] at h
+      rw[←add''_add'_one_one_eq_two] at h
+      rw[←lt_iff_add''_one_le] at h
+      simp[lt.irrefl] at h
+    }
+  }
+}
+
+theorem nat.add'_right_lt_of_lt{x y z:Digits}{d:Digit}(h:add' x y d < add' x z d):y < z:=by{
+  match y, z with
+  | y, ε => {
+    cases d with
+    | zero => {
+      simp at h
+      have h':=(add'_le x y (0)).to_not_gt h
+      contradiction
+    }
+    | one => {
+      repeat rw[←add''_add'_zero_one_eq_one] at h
+      rw[←le_iff_lt_add''_one] at h
+      rw[←lt_iff_add''_one_le] at h
+      simp at h
+      have h':=(add'_le x y (0)).to_not_gt h
+      contradiction
+    }
+    | two => {
+      repeat rw[←add''_add'_one_one_eq_two] at h
+      rw[←le_iff_lt_add''_one] at h
+      rw[←lt_iff_add''_one_le] at h
+      repeat rw[←add''_add'_zero_one_eq_one] at h
+      rw[←le_iff_lt_add''_one] at h
+      rw[←lt_iff_add''_one_le] at h
+      simp at h
+      have h':=(add'_le x y (0)).to_not_gt h
+      contradiction
+    }
+  }
+  | ε, zs::zd => {
+    simp[lt]
+    intro h'
+    exact h.to_ne.elim (eq_of_eq_add'_eq (eq.refl _) (zero_nat_eq_zero ε_isZero h'))
+  }
+  | ys::yd, zs::zd => {
+    match x with
+    | ε => {
+      simp at h
+      exact add''_left_lt_of_lt h
+    }
+    | xs::xd => {
+      match xd, yd, zd, d with
+      | (0), (0), (0), (0)
+      | (0), (0), (0), (1)
+      | (0), (0), (0), (2)
+      | (0), (1), (0), (0)
+      | (0), (1), (0), (1)
+      | (0), (1), (1), (0)
+      | (0), (1), (1), (1)
+      | (0), (1), (1), (2)
+      | (0), (2), (0), (0)
+      | (0), (2), (1), (0)
+      | (0), (2), (1), (2)
+      | (0), (2), (2), (0)
+      | (0), (2), (2), (1)
+      | (0), (2), (2), (2)
+      | (1), (0), (0), (0)
+      | (1), (0), (0), (1)
+      | (1), (0), (0), (2)
+      | (1), (1), (0), (0)
+      | (1), (1), (0), (2)
+      | (1), (1), (1), (0)
+      | (1), (1), (1), (1)
+      | (1), (1), (1), (2)
+      | (1), (2), (0), (2)
+      | (1), (2), (1), (1)
+      | (1), (2), (1), (2)
+      | (1), (2), (2), (0)
+      | (1), (2), (2), (1)
+      | (1), (2), (2), (2)
+      | (2), (0), (0), (0)
+      | (2), (0), (0), (1)
+      | (2), (0), (0), (2)
+      | (2), (1), (0), (1)
+      | (2), (1), (0), (2)
+      | (2), (1), (1), (0)
+      | (2), (1), (1), (1)
+      | (2), (1), (1), (2)
+      | (2), (2), (0), (1)
+      | (2), (2), (1), (0)
+      | (2), (2), (1), (1)
+      | (2), (2), (2), (0)
+      | (2), (2), (2), (1)
+      | (2), (2), (2), (2) => {
+        simp[add', Digit.half_add3, lt] at *
+        exact add'_right_lt_of_lt h
+      }
+      | (0), (0), (1), (0)
+      | (0), (0), (1), (1)
+      | (0), (0), (2), (0)
+      | (0), (1), (2), (0)
+      | (0), (1), (2), (2)
+      | (1), (0), (1), (0)
+      | (1), (0), (1), (2)
+      | (1), (0), (2), (2)
+      | (1), (1), (2), (1)
+      | (1), (1), (2), (2)
+      | (2), (0), (1), (1)
+      | (2), (0), (1), (2)
+      | (2), (0), (2), (1)
+      | (2), (1), (2), (0)
+      | (2), (1), (2), (1) => {
+        simp[add', Digit.half_add3, lt] at *
+        cases h with
+        | inl h => exact Or.inl (add'_right_lt_of_lt h)
+        | inr h => exact Or.inr (add'_left_cancel h (eq.refl _))
+      }
+      | (0), (0), (1), (2)
+      | (0), (0), (2), (1)
+      | (0), (0), (2), (2)
+      | (0), (1), (2), (1)
+      | (1), (0), (1), (1)
+      | (1), (0), (2), (0)
+      | (1), (0), (2), (1)
+      | (1), (1), (2), (0)
+      | (2), (0), (1), (0)
+      | (2), (0), (2), (0) => {
+        simp[add', Digit.half_add3, lt] at *
+        rw[←add''_add'_zero_one_eq_one] at h
+        rw[←le_iff_lt_add''_one] at h
+        rw[le_iff_eq_or_lt] at h
+        cases h with
+        | inl h => exact Or.inr (add'_left_cancel h (eq.refl _))
+        | inr h => exact Or.inl  (add'_right_lt_of_lt h)
+      }
+      | (0), (1), (0), (2)
+      | (0), (2), (0), (1)
+      | (0), (2), (0), (2)
+      | (0), (2), (1), (1)
+      | (1), (1), (0), (1)
+      | (1), (2), (0), (0)
+      | (1), (2), (0), (1)
+      | (1), (2), (1), (0)
+      | (2), (1), (0), (0)
+      | (2), (2), (0), (0) => {
+        simp[add', Digit.half_add3, lt] at *
+        have h:=h.comm
+        rw[←le_iff_eq_or_lt] at h
+        rw[←add''_add'_zero_one_eq_one] at h
+        rw[←lt_iff_add''_one_le] at h
+        exact add'_right_lt_of_lt h
+      }
+      | (2), (0), (2), (2)
+      | (2), (1), (2), (2) => {
+        simp[add', Digit.half_add3, lt] at *
+        rw[←add''_add'_one_one_eq_two] at h
+        rw[←le_iff_lt_add''_one] at h
+        rw[le_iff_eq_or_lt] at h
+        cases h with
+        | inl h => exact Or.inr (add'_left_cancel h (eq.refl _))
+        | inr h => exact Or.inl  (add'_right_lt_of_lt h)
+      }
+      | (2), (2), (0), (2)
+      | (2), (2), (1), (2) => {
+        simp[add', Digit.half_add3, lt] at *
+        have h:=h.comm
+        rw[←le_iff_eq_or_lt] at h
+        rw[←add''_add'_one_one_eq_two] at h
+        rw[←lt_iff_add''_one_le] at h
+        exact add'_right_lt_of_lt h
+      }
+    }
+  }
+}
+
+theorem nat.add'_left_lt_of_lt{x y z:Digits}{d:Digit}(h:add' x z d < add' y z d):x < y:=by{
+  repeat rw[add'.comm _ z] at h
+  exact add'_right_lt_of_lt h
+}
 end add'_properties
 section add_properties
+theorem nat.add_right_le(x y:Digits):x ≤ x + y:=by{
+  simp[add]
+  exact add'_le _ _ _
+}
 
+theorem nat.add_left_le(x y:Digits):y ≤ x + y:=by{
+  rw[add.comm]
+  exact add_right_le _ _
+}
+
+theorem nat.add_right_not_zero_lt(x:Digits){y:Digits}(h:¬y.isZero):x < x + y:=by{
+  simp[add]
+  exact add'_right_not_zero_lt _ h _
+}
+
+theorem nat.add_left_not_zero_lt{x:Digits}(h:¬x.isZero)(y:Digits):y < x + y:=by{
+  rw[add.comm]
+  exact add_right_not_zero_lt _ h
+}
+
+theorem nat.lt_of_add_right_lt(x:Digits){y z:Digits}(h:y < z):x + y < x + z:=by{
+  repeat rw[add]
+  exact lt_of_add'_right_lt _ h _
+}
+
+theorem nat.lt_of_add_left_lt{x y:Digits}(h:x < y)(z:Digits):x + z < y + z:=by{
+  repeat rw[add.comm _ z]
+  exact lt_of_add_right_lt z h
+}
+
+theorem nat.add_right_lt_of_lt{x y z:Digits}(h:x + y < x + z):y < z:=by{
+  repeat rw[add] at h
+  exact add'_right_lt_of_lt h
+}
+
+theorem nat.add_left_lt_of_lt{x y z:Digits}(h:x + z < y + z):x < y:=by{
+  repeat rw[add.comm _ z] at h
+  exact add_right_lt_of_lt h
+}
 end add_properties
 end Digits
 end wkmath

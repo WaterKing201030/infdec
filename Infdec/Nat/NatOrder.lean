@@ -537,7 +537,7 @@ theorem eq_or_ne(x y:Digits):x =N y ∨ x ≠N y:=by{
   exact Decidable.em (x =N y)
 }
 
-theorem not_le_of_gt{x y:Digits}(h:x < y):¬y ≤ x:=by{
+theorem lt.to_not_ge{x y:Digits}(h:x < y):¬y ≤ x:=by{
   intro h'
   rw[le_iff_eq_or_lt] at h'
   cases h' with
@@ -545,7 +545,7 @@ theorem not_le_of_gt{x y:Digits}(h:x < y):¬y ≤ x:=by{
   | inr h' => exact h.asymm h'
 }
 
-theorem not_lt_of_ge{x y:Digits}(h:x ≤ y):¬y < x:=by{
+theorem le.to_not_gt{x y:Digits}(h:x ≤ y):¬y < x:=by{
   rw[le_iff_eq_or_lt] at h
   cases h with
   | inl h => intro h'; exact h'.to_ne.elim h.symm
@@ -608,10 +608,10 @@ theorem lt_of_not_ge{x y:Digits}(h:¬y ≤ x):x < y:=by{
 }
 
 theorem lt_iff_not_ge{x y:Digits}:x < y ↔ ¬ y ≤ x:=
-  Iff.intro not_le_of_gt lt_of_not_ge
+  Iff.intro lt.to_not_ge lt_of_not_ge
 
 theorem le_iff_not_gt{x y:Digits}:x ≤ y ↔ ¬ y < x:=
-  Iff.intro not_lt_of_ge le_of_not_gt
+  Iff.intro le.to_not_gt le_of_not_gt
 
 theorem le_or_gt(x y:Digits):x ≤ y ∨ y < x:=by{
   have h:=Decidable.em (x ≤ y)
