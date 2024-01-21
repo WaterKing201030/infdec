@@ -293,5 +293,11 @@ theorem isStdNat.not_ε_cons{x:Digits}(hn:x≠ε)(h:x.isStdNat)(d:Digit):(x::d).
   exact h
 }
 
+theorem isStdNat_isZero_is_ε{x:Digits}(h0:x.isStdNat)(h1:x.isZero):x = ε:=by{
+  have h1:=toStdNat.zero_to_nil h1
+  rw[stdNat_toStdNat_eq h0] at h1
+  exact h1
+}
+
 end Digits
 end wkmath

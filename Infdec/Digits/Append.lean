@@ -341,6 +341,51 @@ theorem double.cancel{x y:Digits}(h:x.double = y.double):x=y:=by{
   exact append.mid_double_cancel h
 }
 
+theorem double.len_congr{x y:Digits}(h:x =L y):x.double =L y.double:=
+  append.len_eq_congr h h
+
+theorem double.len_cancel{x y:Digits}(h:x.double =L y.double):x =L y:=by{
+  rw[double, double] at h
+  cases (len.trichotomous x y) with
+  | inl h' => {
+    have h':=(append.len_lt_congr h' h').to_ne.elim h
+    contradiction
+  }
+  | inr h' => cases h' with
+    | inl h' => exact h'
+    | inr h' => {
+      have h':=(append.len_lt_congr h' h').to_ne.symm.elim h
+      contradiction
+    }
+}
+
+theorem double.mod1(x y:Digits)(d:Digit):x.double ≠L y.double::d:=by{
+  simp[double]
+  cases (len.le_or_gt x y) with
+  | inl h => exact (len.lt_of_le_of_lt (append.len_le_congr h h) (len.lt_cons _ _)).to_ne
+  | inr h => {
+    match x with
+    | ε => simp[len.not_lt_ε] at h
+    | xs::xd => {
+      simp[append, len.ne]
+      apply len.ne_of_eq_of_ne (append.len_eq_comm _ _)
+      match y with
+      | ε => simp[append, len.ne]
+      | ys::yd => {
+        simp[append, len.ne]
+        apply len.ne.symm
+        apply len.ne_of_eq_of_ne (append.len_eq_comm _ _)
+        apply len.ne.symm
+        simp[append, len.ne]
+        rw[←double, ←double]
+        exact mod1 xs ys yd
+      }
+    }
+  }
+}
+
+theorem ε_double:(ε).double = ε:=by simp
+
 def triple(x:Digits):Digits:=
   x.double.append x
 
@@ -348,6 +393,86 @@ theorem triple.cancel{x y:Digits}(h:x.triple = y.triple):x=y:=by{
   simp[triple,double] at h
   have h':(((x ++ ε) ++ x) ++ ε) ++ x = (((y ++ ε) ++ y) ++ ε) ++ y:=by simp; exact h
   exact append.mid_triple_cancel h'
+}
+
+theorem triple.len_congr{x y:Digits}(h:x =L y):x.triple =L y.triple:=
+  append.len_eq_congr (append.len_eq_congr h h) h
+
+theorem triple.len_cancel{x y:Digits}(h:x.triple =L y.triple):x =L y:=by{
+  rw[triple, triple] at h
+  cases (len.trichotomous x y) with
+  | inl h' => {
+    have h':=(append.len_lt_congr (append.len_lt_congr h' h') h').to_ne.elim h
+    contradiction
+  }
+  | inr h' => cases h' with
+    | inl h' => exact h'
+    | inr h' => {
+      have h':=(append.len_lt_congr (append.len_lt_congr h' h') h').to_ne.symm.elim h
+      contradiction
+    }
+}
+
+theorem ε_triple:(ε).triple = ε:=by simp
+
+theorem triple.mod1(x y:Digits)(d:Digit):x.triple ≠L y.triple::d:=by{
+  simp[triple,double]
+  cases (len.le_or_gt x y) with
+  | inl h => exact (len.lt_of_le_of_lt (append.len_le_congr (append.len_le_congr h h) h) (len.lt_cons _ _)).to_ne
+  | inr h => {
+    match x with
+    | ε => simp[len.ne]
+    | xs::xd => {
+      simp[append,len.ne]
+      apply len.ne_of_eq_of_ne (append.len_eq_comm _ _)
+      simp[append]
+      match y with
+      | ε => simp[len.ne]
+      | ys::yd => {
+        simp[append, len.ne]
+        apply len.ne.symm
+        apply len.ne_of_eq_of_ne (append.len_eq_comm _ _)
+        apply len.ne.symm
+        simp[append]
+        rw[←append.assoc]
+        apply len.ne_of_eq_of_ne (append.len_eq_comm _ _)
+        rw[←append.assoc]
+        simp[append,len.ne]
+        rw[←double, ←triple]
+        rw[←append.assoc]
+        apply len.ne.symm
+        apply len.ne_of_eq_of_ne (append.len_eq_comm _ _)
+        apply len.ne.symm
+        rw[←append.assoc]
+        rw[append]
+        rw[←double, ←triple]
+        exact mod1 xs ys yd
+      }
+    }
+  }
+}
+
+theorem triple.mod2(x y:Digits)(c d:Digit):x.triple ≠L (y.triple::d)::c:=by{
+  simp[triple,double]
+  cases (len.le_or_gt x y) with
+  | inl h => exact ((len.lt_of_le_of_lt (append.len_le_congr (append.len_le_congr h h) h) (len.lt_cons _ _)).trans (len.lt_cons _ _)).to_ne
+  | inr h => {
+    match x with
+    | ε => simp[len.ne]
+    | xs::xd => {
+      simp[append,len.ne]
+      apply len.ne_of_eq_of_ne (append.len_eq_comm _ _)
+      simp[append]
+      simp[len.ne]
+      rw[←append.assoc]
+      apply len.ne_of_eq_of_ne (append.len_eq_comm _ _)
+      rw[←append.assoc]
+      rw[append]
+      rw[←double,←triple]
+      rw[←double,←triple]
+      exact (mod1 y xs xd).symm
+    }
+  }
 }
 
 end Digits

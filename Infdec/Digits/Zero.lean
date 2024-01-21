@@ -92,5 +92,79 @@ theorem isZero.len_unique{x y:Digits}(hx:x.isZero)(hy:y.isZero)(h:x =L y):x=y:=b
   exact toZero_eq_of_len_eq h
 }
 
+theorem zero_head_eq_zero_tail{x:Digits}(h:x.isZero):ε::(0)++x=x::(0):=by{
+  induction x with
+  | nil => simp
+  | cons xs xd ih => {
+    rw[isZero] at h
+    rw[h.right]
+    rw[append]
+    simp
+    exact ih h.left
+  }
+}
+
+theorem zero_append_zero_comm{x y:Digits}(hx:x.isZero)(hy:y.isZero):x ++ y = y ++ x:=by{
+  induction x generalizing y with
+  | nil => simp
+  | cons xs xd ih => {
+    match y with
+    | ε => simp
+    | ys::yd => {
+      have hx':=hx
+      have hy':=hy
+      rw[isZero] at hx hy
+      rw[hx.right] at *
+      rw[hy.right] at *
+      simp at *
+      rw[append, append]
+      simp
+      rw[←zero_head_eq_zero_tail hx]
+      have tmp: (ε::(0)).isZero := by simp
+      rw[←ih hx tmp, append.assoc, zero_head_eq_zero_tail hy]
+      exact ih hx hy'
+    }
+  }
+}
+
+theorem double_zero_cons_zero_eq_double_zero_cons_two_zero{x:Digits}(h:x.isZero):(x::(0)).double = (x.double::(0))::(0):=by{
+  induction x with
+  | nil => simp[double,append]
+  | cons xs xd ih => {
+    have h':=h
+    simp[isZero] at h
+    rw[h.right] at *
+    have h':=ih h.left
+    simp[double, append] at *
+    rw[h']
+    have tmp:((xs::(0))::(0)).isZero:=by simp[isZero]; exact h
+    rw[zero_append_zero_comm tmp h]
+    simp[append]
+  }
+}
+
+theorem triple_zero_cons_zero_eq_triple_zero_cons_three_zero{x:Digits}(h:x.isZero):(x::(0)).triple=((x.triple::(0))::(0))::(0):=by{
+  induction x with
+  | nil => rfl
+  | cons xs xd ih => {
+    rw[isZero] at h
+    rw[h.right] at *
+    simp at h
+    have ih:=ih h
+    simp[triple, double, append] at *
+    have tmp1:((xs::(0))::(0)).isZero:=by simp[isZero]; exact h
+    have tmp2:((((xs :: (0)) :: (0) ++ xs) :: (0)) :: (0)).isZero:=by simp[isZero]; exact zero_append_zero_isZero tmp1 h
+    rw[zero_append_zero_comm tmp2 h]
+    simp[append]
+    rw[←append.assoc]
+    have tmp3{a b c:Digits}(h:a=b):a++c=b++c:=by rw[h]
+    apply tmp3
+    simp[append]
+    have tmp4:(xs::(0)).isZero:=by simp[isZero]; exact h
+    rw[zero_append_zero_comm tmp4 h]
+    simp[append]
+  }
+}
+
 end Digits
 end wkmath
