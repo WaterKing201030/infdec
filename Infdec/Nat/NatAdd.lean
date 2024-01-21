@@ -610,5 +610,96 @@ theorem add'.notzero'''{x y:Digits}{d:Digit}(h:d≠(0)):¬(add' x y d).isZero:=b
   apply h
   simp[notzero h']
 }
+
+theorem add'_carry_eq_to_add_eq{x y z w:Digits}{d:Digit}(h:add' x y d =N add' z w d):x + y =N z + w :=by{
+  match d with
+  | (0) => exact h
+  | (1) => {
+    repeat rw[←add''_add'_zero_one_eq_one] at h
+    have h:=nat.add''_carry_cancel h
+    exact h
+  }
+  | (2) => {
+    repeat rw[←add''_add'_one_one_eq_two] at h
+    have h:=nat.add''_carry_cancel h
+    repeat rw[←add''_add'_zero_one_eq_one] at h
+    have h:=nat.add''_carry_cancel h
+    exact h
+  }
+}
+
+theorem add_eq_to_add'_carry_eq{x y z w:Digits}(h:x + y =N z + w)(d:Digit):add' x y d =N add' z w d:=by{
+  match d with
+  | (0) => exact h
+  | (1) => {
+    repeat rw[←add''_add'_zero_one_eq_one]
+    apply nat.eq_of_eq_add''
+    exact h
+  }
+  | (2) => {
+    repeat rw[←add''_add'_one_one_eq_two]
+    apply nat.eq_of_eq_add''
+    repeat rw[←add''_add'_zero_one_eq_one]
+    apply nat.eq_of_eq_add''
+    exact h
+  }
+}
+
+theorem add_digit_nat_eq_add''(x:Digits)(d:Digit):x + ε::d =N add'' x d:=by{
+  match x with
+  | ε => match d with | (0) | (1) | (2) => simp
+  | xs::xd => {
+    match xd, d with
+    | (0), (0)
+    | (0), (1)
+    | (0), (2)
+    | (1), (0)
+    | (1), (1)
+    | (1), (2)
+    | (2), (0)
+    | (2), (1)
+    | (2), (2) => {
+      simp[add, add', add'', Digit.half_add3]
+      exact nat.eq.refl _
+    }
+  }
+}
+
+theorem cons_zero_nat_eq_triple(x:Digits):x::(0) =N x + x + x:=by{
+  induction x with
+  | nil => simp
+  | cons xs xd ih => {
+    match xd with
+    | (0) => {
+      simp[add,add', Digit.half_add3,nat.eq]
+      repeat rw[←add]
+      exact ih
+    }
+    | (1) => {
+      simp[add,add', Digit.half_add3,nat.eq]
+      rw[tail_eq_tail_zero_add'']
+      rw[←add''_add'_zero_one_eq_one]
+      apply nat.eq_of_eq_add''
+      repeat rw[←add]
+      exact ih
+    }
+    | (2) => {
+      simp[add,add', Digit.half_add3,nat.eq]
+      rw[tail_eq_tail_zero_add'']
+      rw[←add''.one_one_eq_two]
+      rw[←add''_add'_zero_one_eq_one]
+      apply nat.eq_of_eq_add''
+      rw[add'.carry_comm]
+      rw[←add''_add'_zero_one_eq_one]
+      apply nat.eq_of_eq_add''
+      repeat rw[←add]
+      exact ih
+    }
+  }
+}
+
+theorem add_cons_zero_eq_cons_zero_add(x y:Digits):(x + y)::(0)=x::(0) + y::(0):=by{
+  simp[add,add',Digit.half_add3]
+}
 end Digits
 end wkmath

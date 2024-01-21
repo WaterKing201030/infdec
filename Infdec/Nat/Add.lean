@@ -1424,6 +1424,11 @@ theorem add.assoc(x y z:Digits):(x + y) + z = x + (y + z):=
 @[simp] theorem add.add_ε(x:Digits):x + ε = x:=by simp[add]
 @[simp] theorem add.ε_add(x:Digits):ε + x = x:=by simp[comm]
 
+theorem tail_eq_tail_zero_add''(x:Digits)(d:Digit):x::d=add'' (x::(0)) d:=by{
+  match d with
+  | (0) | (1) | (2) => simp[add'', Digit.half_add3]
+}
+
 theorem add_not_zero_digit(x:Digits){d:Digit}(h:d≠(0)):x + ε::d = x.add'' d:=by{
   match x with
   | ε => match d with | (1) | (2) => simp[add'']

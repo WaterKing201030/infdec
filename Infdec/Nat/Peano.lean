@@ -1,5 +1,6 @@
 import Infdec.Nat.NatAddOrder
 import Infdec.Nat.Sub
+import Infdec.Nat.Mul
 
 namespace wkmath
 namespace Digits
@@ -48,6 +49,12 @@ theorem succ_cancel{x y:Digits}(h:x.Succ =N y.Succ):x =N y:=
 
 theorem strict_peano_add_2(x y:Digits):x + y.Succ = (x + y).Succ:=by{
   rw[Succ,Succ,←add.assoc]
+}
+
+theorem mul_One_nat_eq(x:Digits):x * One =N x:=by{
+  rw[One]
+  simp[mul, mul'.mul'_one_carry_zero]
+  exact nat.zero_add (by simp)
 }
 
 /- WellFound Relation -/
@@ -290,6 +297,11 @@ theorem peano_le_ind_1(x:Digits):x ≤ x:=
   nat.le.refl x
 theorem peano_le_ind_2{x y:Digits}(h:x ≤ y):x ≤ y.Succ:=
   h.trans (nat.add_right_le y One)
+/- peano mul 0 : closure : proof by * definition -/
+theorem peano_mul_1(x:Digits){y:Digits}(h:y.isZero):(x * y).isZero:=
+  mul.mul_zero x h
+theorem peano_mul_2(x y:Digits):x * y.Succ =N x * y + x:=
+  (mul.right_distrib x y One).trans (nat.eq_of_eq_add_eq (nat.eq.refl (x * y)) (mul_One_nat_eq x))
 /- std digits -/
 theorem std_peano_1:Zero.isStdNat:=
   Zero_isStdNat
@@ -362,5 +374,14 @@ theorem std_peano_le_ind_1{x:Digits}(_:x.isStdNat):x ≤ x:=
   peano_le_ind_1 x
 theorem std_peano_le_ind_2{x y:Digits}(_:x.isStdNat)(_:y.isStdNat)(h:x ≤ y):x ≤ y.Succ:=
   peano_le_ind_2 h
+theorem std_peano_mul_0{x y:Digits}(hx:x.isStdNat)(hy:y.isStdNat):(x *ₛ y).isStdNat:=
+  std_mul.closure hx hy
+theorem std_peano_mul_1{x:Digits}(_:x.isStdNat):x *ₛ Zero = Zero:=by
+  simp[std_mul, mul]
+theorem std_peano_mul_2{x y:Digits}(hx:x.isStdNat)(hy:y.isStdNat):x *ₛ y.Succ = x *ₛ y + x:=by{
+  apply isStdNat.unique (std_peano_mul_0 hx (std_peano_2 hy)) (std_peano_add_0 (std_peano_mul_0 hx hy) hx)
+  repeat rw[std_mul]
+  exact ((toStdNat_nat_eq _).trans (peano_mul_2 _ _)).trans (nat.eq_of_eq_add_eq (toStdNat_nat_eq _).symm (nat.eq.refl _))
+}
 end Digits
 end wkmath

@@ -122,6 +122,9 @@ theorem nat.eq.zero_append{x:Digits}(h:x.isZero)(y:Digits):x++y =N y:=by{
   }
 }
 
+theorem nat.cons_eq_of_eq{x y:Digits}(h:x =N y)(d:Digit):x::d =N y::d :=
+  And.intro h (Eq.refl _)
+
 theorem nat.quot_ind{P:Digits → Sort u}(h:∀(y x:Digits),x =N y→P x)(x:Digits):P x:=
   h x x (eq.refl x)
 
