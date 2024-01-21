@@ -7,51 +7,51 @@ def append:Digits → Digits → Digits
   | x, ε => x
   | x, y::d => (x.append y)::d
 
-notation:65 lhs:66 " :+ " rhs:66 => append lhs rhs
+notation:65 lhs:66 " ++ " rhs:66 => append lhs rhs
 
 section strict
 
-@[simp] theorem append_ε(x:Digits):x :+ ε = x:=by simp[append]
-@[simp] theorem ε_append(x:Digits):ε :+ x = x:=by{
+@[simp] theorem append_ε(x:Digits):x ++ ε = x:=by simp[append]
+@[simp] theorem ε_append(x:Digits):ε ++ x = x:=by{
   induction x with
   | nil => simp
   | cons xs xd ih => rw[append,ih]
 }
-theorem append_cons(x y:Digits)(d:Digit):x:+y::d = (x:+y)::d:=by simp[append]
+theorem append_cons(x y:Digits)(d:Digit):x++y::d = (x++y)::d:=by simp[append]
 
-theorem append_tail(x:Digits)(d:Digit):x :+ ε::d = x::d := by simp[append]
+theorem append_tail(x:Digits)(d:Digit):x ++ ε::d = x::d := by simp[append]
 
-theorem append.ε_unique{x y:Digits}(h:x :+ y = ε):x=ε∧y=ε:=by{
+theorem append.ε_unique{x y:Digits}(h:x ++ y = ε):x=ε∧y=ε:=by{
   match x, y with
   | ε, ε => simp
   | _::_, ε => contradiction
 }
 
-theorem append_not_ε(x:Digits){y:Digits}(h:y≠ε):x :+ y ≠ ε :=by{
+theorem append_not_ε(x:Digits){y:Digits}(h:y≠ε):x ++ y ≠ ε :=by{
   intro h
   have h:=(append.ε_unique h).right
   contradiction
 }
 
-theorem not_ε_append{x:Digits}(h:x≠ε)(y:Digits):x :+ y ≠ ε := by{
+theorem not_ε_append{x:Digits}(h:x≠ε)(y:Digits):x ++ y ≠ ε := by{
   intro h
   have h:=(append.ε_unique h).left
   contradiction
 }
 
-theorem append.assoc(x y z:Digits):(x:+y):+z=x:+(y:+z):=by{
+theorem append.assoc(x y z:Digits):(x++y)++z=x++(y++z):=by{
   induction z with
   | nil => simp
   | cons zs zd ih => simp[append]; exact ih
 }
 
-theorem append.right_cancel{x y z:Digits}(h:x :+ z = y :+ z):x = y:=by{
+theorem append.right_cancel{x y z:Digits}(h:x ++ z = y ++ z):x = y:=by{
   induction z with
   | nil => simp at h; exact h
   | cons zs zd ih => simp[append] at h; exact ih h
 }
 
-theorem append.head_cancel{x y:Digits}{d:Digit}(h:ε::d :+ x = ε::d :+ y):x = y:=by{
+theorem append.head_cancel{x y:Digits}{d:Digit}(h:ε::d ++ x = ε::d ++ y):x = y:=by{
   match x, y with
   | ε, ε => simp
   | ε, ys::_ => {
@@ -74,7 +74,7 @@ theorem append.head_cancel{x y:Digits}{d:Digit}(h:ε::d :+ x = ε::d :+ y):x = y
   }
 }
 
-theorem append.left_cancel{x y z:Digits}(h:x :+ y = x :+ z):y = z:=by{
+theorem append.left_cancel{x y z:Digits}(h:x ++ y = x ++ z):y = z:=by{
   induction x generalizing y z with
   | nil => simp at h; exact h
   | cons xs xd ih => {
@@ -88,7 +88,7 @@ end strict
 
 section len
 section eq
-theorem append.len_eq_congr{x y z w:Digits}(h0:x =L z)(h1:y =L w):x:+y =L z:+w:=by{
+theorem append.len_eq_congr{x y z w:Digits}(h0:x =L z)(h1:y =L w):x++y =L z++w:=by{
   match y, w with
   | _, ε => {
     have h1:=len.ε_unique h1
@@ -102,7 +102,7 @@ theorem append.len_eq_congr{x y z w:Digits}(h0:x =L z)(h1:y =L w):x:+y =L z:+w:=
   }
 }
 
-theorem head_len_eq_tail{x y:Digits}(h:x=Ly)(c d:Digit):ε::c:+x=Ly::d:=by{
+theorem head_len_eq_tail{x y:Digits}(h:x=Ly)(c d:Digit):ε::c++x=Ly::d:=by{
   match x, y with
   | _, ε => {
     have h:=len.ε_unique h
@@ -115,14 +115,14 @@ theorem head_len_eq_tail{x y:Digits}(h:x=Ly)(c d:Digit):ε::c:+x=Ly::d:=by{
   }
 }
 
-theorem append.len_eq_comm(x y:Digits):x:+y=Ly:+x:=by{
+theorem append.len_eq_comm(x y:Digits):x++y=Ly++x:=by{
   induction x generalizing y with
   | nil => simp; exact len.eq.refl _
   | cons xs xd ih => {
     rw[←append_tail, assoc, append_tail]
     simp[append]
-    have h:xs :+ (ε::xd :+ y) =L (xs :+ y)::xd:=by{
-      rw[←append_tail (xs :+ y) xd]
+    have h:xs ++ (ε::xd ++ y) =L (xs ++ y)::xd:=by{
+      rw[←append_tail (xs ++ y) xd]
       rw[assoc]
       rw[append_tail]
       exact len_eq_congr (len.eq.refl _) (head_len_eq_tail (len.eq.refl _) _ _)
@@ -133,7 +133,7 @@ theorem append.len_eq_comm(x y:Digits):x:+y=Ly:+x:=by{
   }
 }
 
-theorem append.len_eq_right_cancel{x y z w:Digits}(h0:x:+y=Lz:+w)(h1:y=Lw):x=Lz:=by{
+theorem append.len_eq_right_cancel{x y z w:Digits}(h0:x++y=Lz++w)(h1:y=Lw):x=Lz:=by{
   match y, w with
   | _, ε => {
     have h1:=len.ε_unique h1
@@ -147,20 +147,20 @@ theorem append.len_eq_right_cancel{x y z w:Digits}(h0:x:+y=Lz:+w)(h1:y=Lw):x=Lz:
   }
 }
 
-theorem append.len_eq_left_cancel{x y z w:Digits}(h0:x:+y=Lz:+w)(h1:x=Lz):y=Lw:=
+theorem append.len_eq_left_cancel{x y z w:Digits}(h0:x++y=Lz++w)(h1:x=Lz):y=Lw:=
   len_eq_right_cancel ((len_eq_comm y x).trans (h0.trans (len_eq_comm z w))) h1
 end eq
 section le
-theorem append.len_le_left_append(x y:Digits):x≤Ly:+x:=by{
+theorem append.len_le_left_append(x y:Digits):x≤Ly++x:=by{
   induction x with
   | nil => simp; exact len.ε_le _
   | cons xs xd ih => simp[len.le]; exact ih
 }
 
-theorem append.len_le_right_append(x y:Digits):x≤Lx:+y:=
+theorem append.len_le_right_append(x y:Digits):x≤Lx++y:=
   len.le_of_le_of_eq (len_le_left_append _ _) (len_eq_comm _ _)
 
-theorem append.len_le_append_right_cancel{x y z:Digits}(h:x:+y≤Lz):x≤Lz:=by{
+theorem append.len_le_append_right_cancel{x y z:Digits}(h:x++y≤Lz):x≤Lz:=by{
   induction y with
   | nil => simp at h; exact h
   | cons ys yd ih => {
@@ -170,10 +170,10 @@ theorem append.len_le_append_right_cancel{x y z:Digits}(h:x:+y≤Lz):x≤Lz:=by{
   }
 }
 
-theorem append.len_le_append_left_cancel{x y z:Digits}(h:x:+y≤Lz):y≤Lz:=
+theorem append.len_le_append_left_cancel{x y z:Digits}(h:x++y≤Lz):y≤Lz:=
   len_le_append_right_cancel (len.le_of_eq_of_le (len_eq_comm _ _) h)
 
-theorem append.len_le_congr{x y z w:Digits}(h0:x ≤L z)(h1:y ≤L w):x :+ y ≤L z:+ w:=by{
+theorem append.len_le_congr{x y z w:Digits}(h0:x ≤L z)(h1:y ≤L w):x ++ y ≤L z++ w:=by{
   match y, w with
   | _, ε => {
     have h1:=len.le_ε_is_ε h1
@@ -188,7 +188,7 @@ theorem append.len_le_congr{x y z w:Digits}(h0:x ≤L z)(h1:y ≤L w):x :+ y ≤
   | _::_, _::_ => simp[len.le] at *; exact len_le_congr h0 h1
 }
 
-theorem append.len_le_monotone_right_cancel{x y z w:Digits}(h0:x:+y≤Lz:+w)(h1:w≤Ly):x≤Lz:=by{
+theorem append.len_le_monotone_right_cancel{x y z w:Digits}(h0:x++y≤Lz++w)(h1:w≤Ly):x≤Lz:=by{
   match y, w with
   | ε, _ => {
     have h1:=len.le_ε_is_ε h1
@@ -206,19 +206,19 @@ theorem append.len_le_monotone_right_cancel{x y z w:Digits}(h0:x:+y≤Lz:+w)(h1:
   }
 }
 
-theorem append.len_le_monotone_left_cancel{x y z w:Digits}(h0:x:+y≤Lz:+w)(h1:z≤Lx):y≤Lw:=
+theorem append.len_le_monotone_left_cancel{x y z w:Digits}(h0:x++y≤Lz++w)(h1:z≤Lx):y≤Lw:=
   len_le_monotone_right_cancel (len.le_of_eq_of_le (len_eq_comm _ _) (len.le_of_le_of_eq h0 (len_eq_comm _ _))) h1
 end le
 section lt
-theorem append.len_lt_left_append_not_ε{y:Digits}(h:y≠ε)(x:Digits):x<Ly:+x:=by{
+theorem append.len_lt_left_append_not_ε{y:Digits}(h:y≠ε)(x:Digits):x<Ly++x:=by{
   induction x with
   | nil => simp; exact len.ε_lt_not_ε h
   | cons xs xd ih => simp[append,len.lt];exact ih
 }
-theorem append.len_lt_right_append_not_ε(x:Digits){y:Digits}(h:y≠ε):x<Lx:+y:=
+theorem append.len_lt_right_append_not_ε(x:Digits){y:Digits}(h:y≠ε):x<Lx++y:=
   len.lt_of_lt_of_eq (len_lt_left_append_not_ε h _) (len_eq_comm _ _)
 
-theorem append.len_lt_append_right_cancel{x y z:Digits}(h:x:+y <L z):x<Lz:=by{
+theorem append.len_lt_append_right_cancel{x y z:Digits}(h:x++y <L z):x<Lz:=by{
   induction y with
   | nil => simp at h; exact h
   | cons ys yd ih => {
@@ -227,10 +227,10 @@ theorem append.len_lt_append_right_cancel{x y z:Digits}(h:x:+y <L z):x<Lz:=by{
   }
 }
 
-theorem append.len_lt_append_left_cancel{x y z:Digits}(h:x:+y<Lz):y<Lz:=
+theorem append.len_lt_append_left_cancel{x y z:Digits}(h:x++y<Lz):y<Lz:=
   len_lt_append_right_cancel (len.lt_of_eq_of_lt (len_eq_comm _ _) h)
 
-theorem append.len_lt_of_len_lt_append_len_le{x y z w:Digits}(h0:x <L z)(h1:y ≤L w):x:+y<Lz:+w:=by{
+theorem append.len_lt_of_len_lt_append_len_le{x y z w:Digits}(h0:x <L z)(h1:y ≤L w):x++y<Lz++w:=by{
   have h2:=h0.to_le
   have h3:=len_le_congr h2 h1
   rw[len.lt_iff_le_and_ne]
@@ -243,13 +243,13 @@ theorem append.len_lt_of_len_lt_append_len_le{x y z w:Digits}(h0:x <L z)(h1:y �
   exact len_le_monotone_right_cancel h4 h1
 }
 
-theorem append.len_lt_of_len_le_append_len_lt{x y z w:Digits}(h0:x≤Lz)(h1:y<Lw):x:+y<Lz:+w:=
+theorem append.len_lt_of_len_le_append_len_lt{x y z w:Digits}(h0:x≤Lz)(h1:y<Lw):x++y<Lz++w:=
   len.lt_of_eq_of_lt (len_eq_comm _ _) (len.lt_of_lt_of_eq (len_lt_of_len_lt_append_len_le h1 h0) (len_eq_comm _ _))
 
-theorem append.len_lt_congr{x y z w}(h0:x<Lz)(h1:y<Lw):x:+y<Lz:+w:=
+theorem append.len_lt_congr{x y z w}(h0:x<Lz)(h1:y<Lw):x++y<Lz++w:=
   len_lt_of_len_lt_append_len_le h0 h1.to_le
 
-theorem append.len_lt_monotone_right_cancel{x y z w:Digits}(h0:x:+y<Lz:+w)(h1:w≤Ly):x<Lz:=by{
+theorem append.len_lt_monotone_right_cancel{x y z w:Digits}(h0:x++y<Lz++w)(h1:w≤Ly):x<Lz:=by{
   match y, w with
   | ε, _ => {
     have h1:=len.le_ε_is_ε h1
@@ -267,23 +267,23 @@ theorem append.len_lt_monotone_right_cancel{x y z w:Digits}(h0:x:+y<Lz:+w)(h1:w�
   }
 }
 
-theorem append.len_lt_monotone_left_cancel{x y z w:Digits}(h0:x:+y<Lz:+w)(h1:z≤Lx):y<Lw:=
+theorem append.len_lt_monotone_left_cancel{x y z w:Digits}(h0:x++y<Lz++w)(h1:z≤Lx):y<Lw:=
   len_lt_monotone_right_cancel (len.lt_of_eq_of_lt (len_eq_comm _ _) (len.lt_of_lt_of_eq h0 (len_eq_comm _ _))) h1
 end lt
 end len
 
-theorem append.mid_double_cancel{x y z:Digits}(h:(y:+x):+y=(z:+x):+z):y=z:=by{
+theorem append.mid_double_cancel{x y z:Digits}(h:(y++x)++y=(z++x)++z):y=z:=by{
   match y, z with
   | ε, ε => simp
   | ε, zs::zd => {
     simp at h
-    have h':x <L (zs :: zd :+ x) :+ zs :: zd:= (len_lt_left_append_not_ε (zs::zd).noConfusion _).trans (len_lt_right_append_not_ε _ (zs::zd).noConfusion)
+    have h':x <L (zs :: zd ++ x) ++ zs :: zd:= (len_lt_left_append_not_ε (zs::zd).noConfusion _).trans (len_lt_right_append_not_ε _ (zs::zd).noConfusion)
     have h':=h'.to_ne.to_strict_ne
     contradiction
   }
   | ys::yd, ε => {
     simp at h
-    have h':x <L (ys :: yd :+ x) :+ ys :: yd:= (len_lt_left_append_not_ε (ys::yd).noConfusion _).trans (len_lt_right_append_not_ε _ (ys::yd).noConfusion)
+    have h':x <L (ys :: yd ++ x) ++ ys :: yd:= (len_lt_left_append_not_ε (ys::yd).noConfusion _).trans (len_lt_right_append_not_ε _ (ys::yd).noConfusion)
     have h':=h'.to_ne.to_strict_ne.symm
     contradiction
   }
@@ -298,12 +298,12 @@ theorem append.mid_double_cancel{x y z:Digits}(h:(y:+x):+y=(z:+x):+z):y=z:=by{
   }
 }
 
-theorem append.mid_triple_cancel{x y z w:Digits}(h:(((x:+z):+x):+w):+x=(((y:+z):+y):+w):+y):x=y:=by{
+theorem append.mid_triple_cancel{x y z w:Digits}(h:(((x++z)++x)++w)++x=(((y++z)++y)++w)++y):x=y:=by{
   match x, y with
   | ε, ε => simp
   | ε, ds::d => {
     simp at h
-    have h0:z:+w <L (((ds :: d :+ z) :+ ds :: d) :+ w) :+ ds :: d:=by{
+    have h0:z++w <L (((ds :: d ++ z) ++ ds :: d) ++ w) ++ ds :: d:=by{
       rw[assoc]
       exact len_lt_congr ((len_lt_left_append_not_ε (ds::d).noConfusion _).trans (len_lt_right_append_not_ε _ (ds::d).noConfusion)) (len_lt_right_append_not_ε _ (ds::d).noConfusion)
     }
@@ -312,7 +312,7 @@ theorem append.mid_triple_cancel{x y z w:Digits}(h:(((x:+z):+x):+w):+x=(((y:+z):
   }
   | ds::d, ε => {
     simp at h
-    have h0:z:+w <L (((ds :: d :+ z) :+ ds :: d) :+ w) :+ ds :: d:=by{
+    have h0:z++w <L (((ds :: d ++ z) ++ ds :: d) ++ w) ++ ds :: d:=by{
       rw[assoc]
       exact len_lt_congr ((len_lt_left_append_not_ε (ds::d).noConfusion _).trans (len_lt_right_append_not_ε _ (ds::d).noConfusion)) (len_lt_right_append_not_ε _ (ds::d).noConfusion)
     }
@@ -323,7 +323,7 @@ theorem append.mid_triple_cancel{x y z w:Digits}(h:(((x:+z):+x):+w):+x=(((y:+z):
     simp[append] at h
     simp[h.right] at *
     rw[←append_tail xs, ←append_tail] at h
-    rw[←append_tail ys, ←append_tail (((ys :+ ε :: yd) :+ z) :+ ys)] at h
+    rw[←append_tail ys, ←append_tail (((ys ++ ε :: yd) ++ z) ++ ys)] at h
     rw[assoc _ _ z, assoc _ _ w] at h
     rw[assoc _ _ z, assoc _ _ w] at h
     exact mid_triple_cancel h
@@ -337,17 +337,142 @@ theorem double.cancel{x y:Digits}(h:x.double = y.double):x=y:=by{
   rw[double, double] at h
   rw[←append_ε x, ←append_ε y] at h
   rw[←append.assoc, ←append.assoc] at h
-  rw[append_ε ((x:+ε):+x),append_ε ((y:+ε):+y)] at h
+  rw[append_ε ((x++ε)++x),append_ε ((y++ε)++y)] at h
   exact append.mid_double_cancel h
 }
+
+theorem double.len_congr{x y:Digits}(h:x =L y):x.double =L y.double:=
+  append.len_eq_congr h h
+
+theorem double.len_cancel{x y:Digits}(h:x.double =L y.double):x =L y:=by{
+  rw[double, double] at h
+  cases (len.trichotomous x y) with
+  | inl h' => {
+    have h':=(append.len_lt_congr h' h').to_ne.elim h
+    contradiction
+  }
+  | inr h' => cases h' with
+    | inl h' => exact h'
+    | inr h' => {
+      have h':=(append.len_lt_congr h' h').to_ne.symm.elim h
+      contradiction
+    }
+}
+
+theorem double.mod1(x y:Digits)(d:Digit):x.double ≠L y.double::d:=by{
+  simp[double]
+  cases (len.le_or_gt x y) with
+  | inl h => exact (len.lt_of_le_of_lt (append.len_le_congr h h) (len.lt_cons _ _)).to_ne
+  | inr h => {
+    match x with
+    | ε => simp[len.not_lt_ε] at h
+    | xs::xd => {
+      simp[append, len.ne]
+      apply len.ne_of_eq_of_ne (append.len_eq_comm _ _)
+      match y with
+      | ε => simp[append, len.ne]
+      | ys::yd => {
+        simp[append, len.ne]
+        apply len.ne.symm
+        apply len.ne_of_eq_of_ne (append.len_eq_comm _ _)
+        apply len.ne.symm
+        simp[append, len.ne]
+        rw[←double, ←double]
+        exact mod1 xs ys yd
+      }
+    }
+  }
+}
+
+theorem ε_double:(ε).double = ε:=by simp
 
 def triple(x:Digits):Digits:=
   x.double.append x
 
 theorem triple.cancel{x y:Digits}(h:x.triple = y.triple):x=y:=by{
   simp[triple,double] at h
-  have h':(((x :+ ε) :+ x) :+ ε) :+ x = (((y :+ ε) :+ y) :+ ε) :+ y:=by simp; exact h
+  have h':(((x ++ ε) ++ x) ++ ε) ++ x = (((y ++ ε) ++ y) ++ ε) ++ y:=by simp; exact h
   exact append.mid_triple_cancel h'
+}
+
+theorem triple.len_congr{x y:Digits}(h:x =L y):x.triple =L y.triple:=
+  append.len_eq_congr (append.len_eq_congr h h) h
+
+theorem triple.len_cancel{x y:Digits}(h:x.triple =L y.triple):x =L y:=by{
+  rw[triple, triple] at h
+  cases (len.trichotomous x y) with
+  | inl h' => {
+    have h':=(append.len_lt_congr (append.len_lt_congr h' h') h').to_ne.elim h
+    contradiction
+  }
+  | inr h' => cases h' with
+    | inl h' => exact h'
+    | inr h' => {
+      have h':=(append.len_lt_congr (append.len_lt_congr h' h') h').to_ne.symm.elim h
+      contradiction
+    }
+}
+
+theorem ε_triple:(ε).triple = ε:=by simp
+
+theorem triple.mod1(x y:Digits)(d:Digit):x.triple ≠L y.triple::d:=by{
+  simp[triple,double]
+  cases (len.le_or_gt x y) with
+  | inl h => exact (len.lt_of_le_of_lt (append.len_le_congr (append.len_le_congr h h) h) (len.lt_cons _ _)).to_ne
+  | inr h => {
+    match x with
+    | ε => simp[len.ne]
+    | xs::xd => {
+      simp[append,len.ne]
+      apply len.ne_of_eq_of_ne (append.len_eq_comm _ _)
+      simp[append]
+      match y with
+      | ε => simp[len.ne]
+      | ys::yd => {
+        simp[append, len.ne]
+        apply len.ne.symm
+        apply len.ne_of_eq_of_ne (append.len_eq_comm _ _)
+        apply len.ne.symm
+        simp[append]
+        rw[←append.assoc]
+        apply len.ne_of_eq_of_ne (append.len_eq_comm _ _)
+        rw[←append.assoc]
+        simp[append,len.ne]
+        rw[←double, ←triple]
+        rw[←append.assoc]
+        apply len.ne.symm
+        apply len.ne_of_eq_of_ne (append.len_eq_comm _ _)
+        apply len.ne.symm
+        rw[←append.assoc]
+        rw[append]
+        rw[←double, ←triple]
+        exact mod1 xs ys yd
+      }
+    }
+  }
+}
+
+theorem triple.mod2(x y:Digits)(c d:Digit):x.triple ≠L (y.triple::d)::c:=by{
+  simp[triple,double]
+  cases (len.le_or_gt x y) with
+  | inl h => exact ((len.lt_of_le_of_lt (append.len_le_congr (append.len_le_congr h h) h) (len.lt_cons _ _)).trans (len.lt_cons _ _)).to_ne
+  | inr h => {
+    match x with
+    | ε => simp[len.ne]
+    | xs::xd => {
+      simp[append,len.ne]
+      apply len.ne_of_eq_of_ne (append.len_eq_comm _ _)
+      simp[append]
+      simp[len.ne]
+      rw[←append.assoc]
+      apply len.ne_of_eq_of_ne (append.len_eq_comm _ _)
+      rw[←append.assoc]
+      rw[append]
+      rw[←double,←triple]
+      rw[←double,←triple]
+      exact (mod1 y xs xd).symm
+    }
+  }
 }
 
 end Digits
