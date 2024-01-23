@@ -203,27 +203,29 @@ def isTails(y x:Digits):Prop:=
   | nil => instDecidableFalse
   | cons _ _ => instDecidableEq
 
+@[inline] instance isTails.wf:WellFounded isTails:=by{
+  apply WellFounded.intro
+  intro x
+  apply Acc.intro
+  induction x using tails.recursion with
+  | base => {
+    intro y h
+    contradiction
+  }
+  | ind x he ih => {
+    intro y h
+    apply Acc.intro
+    rw[isTails] at h
+    simp[he] at h
+    have h: y = tails he := h
+    rw[←h] at ih
+    exact ih
+  }
+}
+
 @[inline] instance isTails.instWF:WellFoundedRelation Digits:={
   rel:=isTails
-  wf:=by{
-    apply WellFounded.intro
-    intro x
-    apply Acc.intro
-    induction x using tails.recursion with
-    | base => {
-      intro y h
-      contradiction
-    }
-    | ind x he ih => {
-      intro y h
-      apply Acc.intro
-      rw[isTails] at h
-      simp[he] at h
-      have h: y = tails he := h
-      rw[←h] at ih
-      exact ih
-    }
-  }
+  wf:=wf
 }
 end Digits
 end wkmath

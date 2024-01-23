@@ -1250,6 +1250,9 @@ theorem nat.add_left_lt_of_lt{x y z:Digits}(h:x + z < y + z):x < y:=by{
   repeat rw[add.comm _ z] at h
   exact add_right_lt_of_lt h
 }
+
+theorem nat.add_left_le_of_le{x y z:Digits}(h:x + z ≤ y + z):x ≤ y:=
+  le_iff_eq_or_lt.mpr (h.to_eq_or_lt.elim (λ h => Or.inl (add_right_cancel h (eq.refl _))) (λ h => Or.inr (add_left_lt_of_lt h)))
 end add_properties
 end Digits
 end wkmath
