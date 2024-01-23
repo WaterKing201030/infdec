@@ -57,6 +57,16 @@ theorem mul_One_nat_eq(x:Digits):x * One =N x:=by{
   exact nat.zero_add (by simp)
 }
 
+theorem le_iff_lt_Succ{x y:Digits}:x ≤ y ↔ x < y.Succ:=
+  Iff.intro
+    (λ h => nat.lt_of_lt_of_eq (nat.le_iff_lt_add''_one.mp h) (add_digit_nat_eq_add'' y (1)).symm)
+    (λ h => nat.le_iff_lt_add''_one.mpr (nat.lt_of_lt_of_eq h (add_digit_nat_eq_add'' y (1))))
+
+theorem lt_iff_Succ_le{x y:Digits}:x < y ↔ x.Succ ≤ y:=
+  Iff.intro
+    (λ h => nat.le_of_eq_of_le (add_digit_nat_eq_add'' x (1)) (nat.lt_iff_add''_one_le.mp h))
+    (λ h => nat.lt_iff_add''_one_le.mpr (nat.le_of_eq_of_le (add_digit_nat_eq_add'' x (1)).symm h))
+
 /- WellFound Relation -/
 section wf
 def toOneBaseNat:Digits → Digits
@@ -383,5 +393,22 @@ theorem std_peano_mul_2{x y:Digits}(hx:x.isStdNat)(hy:y.isStdNat):x *ₛ y.Succ 
   repeat rw[std_mul]
   exact ((toStdNat_nat_eq _).trans (peano_mul_2 _ _)).trans (nat.eq_of_eq_add_eq (toStdNat_nat_eq _).symm (nat.eq.refl _))
 }
+
+section lt_wf
+
+theorem nat.lt.acc_eq{x y:Digits}(hn:x =N y)(ha:Acc nat.lt x):Acc nat.lt y:=
+  Acc.intro y (λ _ h => ha.inv (nat.lt_of_lt_of_eq h hn.symm))
+
+theorem nat.lt.acc{x:Digits}:Acc nat.lt x:=
+  peano_5
+    (λ _ h => Acc.intro _ (λ _ h' => (nat.lt_not_zero h' h).elim))
+    (λ _ ih => Acc.intro _ (λ _ h => (le_iff_lt_Succ.mpr h).to_eq_or_lt.elim (λ h => acc_eq h.symm ih) ih.inv))
+    _
+
+@[inline] instance nat.lt.instWF:WellFoundedRelation Digits:={
+  rel:=nat.lt
+  wf:=WellFounded.intro (λ _ => acc)
+}
+end lt_wf
 end Digits
 end wkmath
