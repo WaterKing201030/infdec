@@ -32,9 +32,13 @@ theorem nat.sub_le(x y:Digits):x - y ≤ x:=by{
   }
 }
 
-theorem nat.sub_zero_eq(x:Digits){y:Digits}(h:y.isZero):x - y =N x:=by{
-  simp[sub, (zero_le x h).to_not_gt]
+theorem sub_zero_eq{x y:Digits}(h:y.isZero):x - y = x:=by{
+  simp[sub, (nat.zero_le x h).to_not_gt]
   rw[half_sub_zero _ h]
+}
+
+theorem nat.sub_zero_nat_eq(x:Digits){y:Digits}(h:y.isZero):x - y =N x:=by{
+  rw[sub_zero_eq h]
   exact nat.eq.refl _
 }
 
