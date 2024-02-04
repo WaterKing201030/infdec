@@ -54,6 +54,9 @@ theorem nat.eq.symm{x y:Digits}(h:x =N y):y =N x:=by{
   | xs::xd, ys::yd => simp[eq] at *; exact And.intro h.left.symm h.right.symm
 }
 
+theorem nat.eq.symm_iff{x y:Digits}:x =N y ↔ y =N x:=
+  Iff.intro (λ h => h.symm) (λ h => h.symm)
+
 theorem nat_eq_zero_isZero{x y:Digits}(h:x =N y)(hx:x.isZero):y.isZero:=by{
   match x, y with
   | _, ε => simp[isZero]

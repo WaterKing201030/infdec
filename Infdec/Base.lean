@@ -4,6 +4,30 @@ theorem Or.comm{p q:Prop}(h:p ∨ q):q ∨ p:=by{
   | inr h => exact Or.inl h
 }
 
+theorem Or.comm_iff(p q:Prop):p ∨ q ↔ q ∨ p:=
+  Iff.intro Or.comm Or.comm
+
+theorem Or.assoc{p q r:Prop}(h:(p ∨ q) ∨ r):p ∨ (q ∨ r):=
+  h.elim (λ h' => h'.elim (λ p => Or.inl p) (λ q => Or.inr (Or.inl q))) (λ r => Or.inr (Or.inr r))
+
+theorem Or.assoc'{p q r:Prop}(h:p ∨ (q ∨ r)):(p ∨ q) ∨ r:=
+  h.elim (λ p => Or.inl (Or.inl p)) (λ h' => h'.elim (λ q => Or.inl (Or.inr q)) (λ r => Or.inr r))
+
+theorem Or.assoc_iff(p q r:Prop):(p ∨ q) ∨ r ↔ p ∨ (q ∨ r):=
+  Iff.intro assoc assoc'
+
+theorem de_morgan_not_or{p q:Prop}:¬(p ∨ q)↔¬p∧¬q:=
+  Iff.intro (λ h => And.intro (λ p => h (Or.inl p)) (λ q => h (Or.inr q))) (λ h h' => h'.elim (λ p => h.left p) (λ q => h.right q))
+
+theorem de_morgan_not_and_of_or_not{p q:Prop}(h:¬p ∨ ¬q):¬(p ∧ q):=
+  λ h' => h.elim (λ p => p h'.left) (λ q => q h'.right)
+
+theorem de_morgan_not_and{p q:Prop}[Decidable p][Decidable q]:¬(p ∧ q) ↔ ¬p ∨ ¬q:=
+  Decidable.not_and_iff_or_not p q
+
+theorem not_not_iff{p:Prop}[Decidable p]:¬¬p↔p:=
+  Iff.intro Decidable.of_not_not (λ p h => h p)
+
 theorem a1i{p:Prop}(h:∀ _:Sort u, p):p:=by {
   exact h PEmpty
 }

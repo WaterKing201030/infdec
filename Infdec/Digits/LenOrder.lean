@@ -107,6 +107,9 @@ theorem eq.symm{x y:Digits}(h:x =L y):y =L x:=by{
   | _::_, _::_ => rw[eq] at *; exact h.symm
 }
 
+theorem eq.symm_iff{x y:Digits}:x =L y ↔ y =L x:=
+  Iff.intro (λ h => h.symm) (λ h => h.symm)
+
 theorem eq.trans{x y z:Digits}(h0:x =L y)(h1:y =L z):x =L z:=by{
   match x, y, z with
   | ε, _::_, _
