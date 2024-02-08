@@ -44,6 +44,15 @@ theorem not_zero_is_Succ{x:Digits}(h:¬x.isZero):∃(y:Digits), y.Succ = x:=by{
     }
   }
 }
+
+theorem zero_lt_Succ{x:Digits}(h:x.isZero)(y:Digits):x < y.Succ:=by{
+  rw[Succ]
+  exact nat.zero_lt_notzero h (add.notzero'' One_is_not_zero)
+}
+
+theorem ε_lt_Succ(x:Digits):ε < x.Succ:=
+  zero_lt_Succ ε_isZero x
+
 theorem succ_cancel{x y:Digits}(h:x.Succ =N y.Succ):x =N y:=
   nat.add_right_cancel h (nat.eq.refl _)
 
@@ -317,8 +326,8 @@ theorem std_peano_1:Zero.isStdNat:=
   Zero_isStdNat
 theorem std_peano_2{x:Digits}(h:x.isStdNat):x.Succ.isStdNat:=
   add.closure h One_isStdNat
-theorem std_peano_3{x y:Digits}(hx:x.isStdNat)(hy:y.isStdNat)(h:x.Succ =N y.Succ):x = y:=
-  isStdNat.unique hx hy (peano_3 h)
+theorem std_peano_3{x y:Digits}(hx:x.isStdNat)(hy:y.isStdNat)(h:x.Succ = y.Succ):x = y:=
+  isStdNat.unique hx hy (peano_3 (by{rw[h]; exact nat.eq.refl _}))
 theorem std_peano_4{x:Digits}(_:x.isStdNat):x.Succ ≠N Zero:=
   peano_4 x Zero_is_zero
 theorem std_peano_5

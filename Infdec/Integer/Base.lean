@@ -23,4 +23,6 @@ def isZero(x:int):=
   x.digits.isZero
 end int
 
+def Digits.to_int(x:Digits):int:=⟨x, false⟩
+
 end wkmath

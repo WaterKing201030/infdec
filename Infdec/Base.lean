@@ -123,3 +123,6 @@ theorem WellFounded.psigma_fst{α:Type u}{β:Type v}{r:α → α → Prop}(h:Wel
 
 theorem WellFounded.psigma_snd{α:Type u}{β:Type v}{r:β → β → Prop}(h:WellFounded r):WellFounded (λ (x y:(_:α) ×' β) => r x.snd y.snd):=
   WellFounded.intro (λ a => (h.apply a.snd).psigma_snd)
+
+theorem WellFounded.func{α:Type u}{β:Type v}{f:α → β}{r:β → β → Prop}{x:α}(wf:WellFounded r):WellFounded (λ (a b:α) => r (f a) (f b)):=
+  InvImage.wf f wf
