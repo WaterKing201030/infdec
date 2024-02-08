@@ -2,10 +2,6 @@ import Infdec.Integer.Add
 
 namespace wkmath
 namespace int
-def Zero:int:=⟨ε, false⟩
-def One:int:=⟨ε::(1), false⟩
-def NegOne:int:=⟨ε::(1), true⟩
-
 def PosLt(x y:int):=
   Zero ≤ x ∧ x < y
 

@@ -124,6 +124,29 @@ theorem same_sign_eq_to_nat_eq{x y:int}(h0:x =I y)(h1:x.negsign = y.negsign):x.d
   }
 }
 
+theorem same_sign_nat_eq_to_eq{x y:int}(h0:x.digits =N y.digits)(h1:x.negsign = y.negsign):x =I y:=by{
+  cases Decidable.em (x.digits.isZero) with
+  | inl h => {
+    simp[eq, h]
+    exact Digits.nat_eq_zero_isZero h0 h
+  }
+  | inr h => {
+    simp[eq, h]
+    exact And.intro h0 h1
+  }
+}
+
+theorem same_sign_nat_eq_to_eq_intro{x0 y0:Digits}{x1 y1:Bool}(h0:x0 =N y0)(h1:x1 = y1):⟨x0, x1⟩ =I ⟨y0, y1⟩:=
+  same_sign_nat_eq_to_eq h0 h1
+
+theorem zero_to_eq{x y:int}(hx:x.digits.isZero)(hy:y.digits.isZero):x =I y:=by{
+  simp[eq, hx]
+  exact hy
+}
+
+theorem zero_to_eq_intro{x0 y0:Digits}{x1 y1:Bool}(h0:x0.isZero)(h1:y0.isZero):⟨x0, x1⟩ =I ⟨y0, y1⟩:=
+  zero_to_eq h0 h1
+
 section decidable
 @[inline] instance instDecidableEq{x y:int}:Decidable (x = y):=
   match x, y with
@@ -540,5 +563,17 @@ theorem le_of_le_of_eq{x y z:int}(h0:x ≤ y)(h1:y =I z):x ≤ z:=
 theorem le.trans{x y z:int}(h0:x ≤ y)(h1:y ≤ z):x ≤ z:=
   h0.elim (λ h0 => h1.elim (λ h1 => (h0.trans h1).to_le) (λ h1 => (lt_of_eq_of_lt h0 h1:x < z).to_le)) (λ h0 => h1.elim (λ h1 => (lt_of_lt_of_eq h0 h1).to_le) (λ h1 => (h0.trans h1).to_le))
 end trans
+
+theorem eq_zero_isZero{x y:int}(h0:x =I y)(h1:x.isZero):y.isZero:=by{
+  rw[isZero] at *
+  rw[eq] at h0
+  simp[h1] at h0
+  exact h0
+}
+
+theorem eq_zero_isZero'{x y:int}(h0:x =I y)(h1:y.isZero):x.isZero:=by
+  have h0:=h0.symm
+  apply eq_zero_isZero h0
+  exact h1
 end int
 end wkmath
