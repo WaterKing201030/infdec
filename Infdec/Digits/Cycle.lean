@@ -2,87 +2,6 @@ import Infdec.Digits.Tails
 
 namespace wkmath
 namespace Digits
-def cutTails:Digits → Digits → Digits
-  | x, ε => x
-  | ε, _::_ => ε
-  | x::_, y::_ => cutTails x y
-
-theorem cutTails_len_le(x y:Digits):cutTails x y ≤L x:=by{
-  match x with
-  | ε => match y with
-    | ε
-    | _::_ => rw[cutTails]; exact len.ε_le _
-  | _::_ => match y with
-    | ε => rw[cutTails]; exact len.le.refl _
-    | _::_ => rw[cutTails]; exact (len.lt_of_le_of_lt (cutTails_len_le _ _) (len.lt_cons _ _)).to_le
-}
-
-def cutTailsLt(x y:Digits × Digits):=
-  cutTails x.fst x.snd <L cutTails y.fst y.snd
-
-theorem len_eq_cutTails_eq_ε{x y:Digits}(h:x =L y):cutTails x y = ε:=by{
-  match x, y with
-  | ε, ε => rfl
-  | _::_, _::_ => {
-    rw[cutTails]
-    rw[len.eq] at h
-    exact len_eq_cutTails_eq_ε h
-  }
-}
-
-theorem len_lt_cutTails_eq_ε{x y:Digits}(h:x <L y):cutTails x y = ε:=by{
-  match x, y with
-  | ε, _::_ => rfl
-  | _::_, _::_ => {
-    rw[cutTails]
-    rw[len.lt] at h
-    exact len_lt_cutTails_eq_ε h
-  }
-}
-
-theorem len_le_cutTails_eq_ε{x y:Digits}(h:x ≤L y):cutTails x y = ε:=
-  h.to_eq_or_lt.elim len_eq_cutTails_eq_ε len_lt_cutTails_eq_ε
-
-theorem len.prod_wf{α:Type u}{r:α → α → Prop}(wf:WellFounded r):WellFounded (λ (a b:Digits × α) => a.fst <L b.fst ∨ (a.fst =L b.fst ∧ r a.snd b.snd)):=by{
-  apply WellFounded.intro
-  intro ⟨x0, x1⟩
-  have ac1:=wf.apply x1
-  have ac0:=lt.wf.apply x0
-  induction ac0 generalizing x1 with
-  | intro y0 _ ih0 => {
-    induction ac1 with
-    | intro y1 _ ih1 => {
-      apply Acc.intro (y0, y1)
-      intro ⟨z0,z1⟩ hz
-      cases hz with
-      | inl hz => {
-        simp at hz
-        apply ih0
-        exact hz
-        exact wf.apply z1
-      }
-      | inr hz => {
-        simp at hz
-        have heq{x0 y0:Digits}(heq:x0 =L y0)(z:α)(ac:Acc (λ a b => a.fst <L b.fst ∨ a.fst =L b.fst ∧ r a.snd b.snd) (x0, z)):Acc (λ a b => a.fst <L b.fst ∨ a.fst =L b.fst ∧ r a.snd b.snd) (y0, z):=by{
-          apply Acc.intro
-          intro ⟨z0,z1⟩ hlt
-          simp at hlt
-          cases hlt with
-          | inl hlt => {
-            exact ac.inv (Or.inl (lt_of_lt_of_eq hlt heq.symm))
-          }
-          | inr hlt => {
-            have hlt:=And.intro (hlt.left.trans heq.symm) hlt.right
-            exact ac.inv (Or.inr hlt)
-          }
-        }
-        apply heq hz.left.symm z1
-        apply ih1
-        exact hz.right
-      }
-    }
-  }
-}
 
 def isCycChild'(x x' y:Digits):=
   match x, x', y with
@@ -130,17 +49,55 @@ termination_by' {
 }
 
 def isCycChild(x y:Digits):=
-  isCycChild' x ε y
+  match x, y with
+  | ε, ε => True
+  | ε, _::_
+  | _::_, ε => False
+  | xs::xd, ys::yd => isCycChild' (xs::xd) ε (ys::yd)
 
 @[inline] instance isCycChild.instDecidable{x y:Digits}:Decidable (isCycChild x y):=
-  isCycChild'.instDecidable
+  match x, y with
+  | ε, ε => instDecidableTrue
+  | ε, _::_
+  | _::_, ε => instDecidableFalse
+  | _::_, _::_ => isCycChild'.instDecidable
 
 def minCyc':Digits → Digits → Digits → Digits
   | _, y, ε => y
   | x, y, zs::zd => if y.isCycChild x then y else minCyc' x ((ε::zd)++y) zs
 
+theorem not_ε_minCyc'_not_ε{x:Digits}(h:x ≠ ε){y z:Digits}(h':y ≠ ε ∨ z ≠ ε):minCyc' x y z ≠ ε:=by{
+  match z with
+  | ε => simp at h'; simp[minCyc']; exact h'
+  | z'::zd => {
+    rw[minCyc']
+    cases Decidable.em (y.isCycChild x) with
+    | inl h'' => {
+      match x with
+      | _::_ => {
+        match y with
+        | ε => contradiction
+        | _::_ => simp[h'']
+      }
+    }
+    | inr h' => {
+      simp[h']
+      have h':(ε::zd ++ y)≠ε:=by{
+        match y with
+        | ε | _::_ => simp[append]
+      }
+      exact not_ε_minCyc'_not_ε h (Or.inl h')
+    }
+  }
+}
+
 def minCyc(x:Digits):Digits:=
   minCyc' x ε x
+
+theorem not_ε_minCyc_not_ε{x:Digits}(h:x ≠ ε):x.minCyc ≠ ε:=by{
+  rw[minCyc]
+  exact not_ε_minCyc'_not_ε h (Or.inr h)
+}
 
 end Digits
 end wkmath

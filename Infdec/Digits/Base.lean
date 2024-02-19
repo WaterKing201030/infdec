@@ -17,6 +17,31 @@ def toString:Digit → String
   | one => "1"
   | two => "2"
 
+def toNat:Digit → Nat
+  | (0) => 0
+  | (1) => 1
+  | (2) => 2
+
+theorem toNat_le_2{d:Digit}:d.toNat ≤ 2:=
+  match d with
+  | (0) | (1) | (2) => by simp
+
+theorem toNat_lt_3{d:Digit}:d.toNat < 3:=
+  match d with
+  | (0) | (1) | (2) => by simp
+
+theorem eq_iff_toNat_eq{a b:Digit}:a = b ↔ a.toNat = b.toNat:=
+  match a, b with
+  | (0), (0)
+  | (0), (1)
+  | (0), (2)
+  | (1), (0)
+  | (1), (1)
+  | (1), (2)
+  | (2), (0)
+  | (2), (1)
+  | (2), (2) => by simp
+
 @[inline] instance : ToString Digit where
   toString := toString
 

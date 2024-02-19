@@ -6,3 +6,5 @@ import Infdec.Digits.Zero
 import Infdec.Digits.Tails
 import Infdec.Digits.DigitOps
 import Infdec.Digits.Cycle
+import Infdec.Digits.Arr
+import Infdec.Digits.NegOne

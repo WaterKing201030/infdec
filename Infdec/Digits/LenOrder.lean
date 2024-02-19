@@ -486,6 +486,13 @@ theorem le_iff_lt_cons(x y:Digits)(d:Digit):x ≤L y ↔ x <L y::d:=by{
   }
 }
 
+theorem lt_iff_cons_le(x y:Digits)(d:Digit):x <L y ↔ x::d ≤L y:=by{
+  match x, y with
+  | _, ε => simp[lt, le, not_lt_ε]
+  | ε, _::_ => simp[lt, le, ε_le]
+  | _::_, _::_ => simp[lt, le]; exact lt_iff_cons_le _ _ _
+}
+
 theorem lt.acc(x:Digits):Acc lt x:=by{
   induction x with
   | nil => {

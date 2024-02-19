@@ -648,6 +648,71 @@ end total
 theorem le_zero_isZero{x y:Digits}(h0:x ≤ y)(h1:y.isZero):x.isZero:=
   le_ε_isZero (nat.le_of_le_of_eq h0 (zero_nat_eq_zero h1 ε_isZero))
 
+theorem not_zero_lt_cons{x:Digits}(h:¬x.isZero)(d:Digit):x < x::d:=by{
+  induction x generalizing d with
+  | nil => contradiction
+  | cons x' d' ih => {
+    rw[isZero] at h
+    rw[de_morgan_not_and] at h
+    match d', d with
+    | (0), (1)
+    | (0), (2) => {
+      simp[lt]
+      simp at h
+      exact Or.inl (ih h _)
+    }
+    | (1), (2) => {
+      simp[lt]
+      cases Decidable.em (x'.isZero) with
+      | inl h' => {
+        apply Or.inl
+        cases x' with
+        | nil => simp[lt]
+        | cons x'' d'' => {
+          rw[isZero] at h'
+          rw[h'.right] at *
+          rw[lt]
+          apply Or.inr
+          simp
+          apply zero_nat_eq_zero h'.left
+          simp[isZero]
+          exact h'.left
+        }
+      }
+      | inr h' => exact Or.inl (ih h' _)
+    }
+    | (0), (0) => {
+      simp[lt]
+      simp at h
+      exact ih h _
+    }
+    | (1), (0)
+    | (1), (1)
+    | (2), (0)
+    | (2), (1)
+    | (2), (2) => {
+      simp[lt]
+      cases Decidable.em (x'.isZero) with
+      | inl h' => {
+        cases x' with
+        | nil => simp[lt]
+        | cons x'' d'' => {
+          rw[isZero] at h'
+          rw[h'.right] at *
+          simp[lt]
+          apply Or.comm
+          rw[←le_iff_eq_or_lt]
+          exact zero_le _ h'.left
+        }
+      }
+      | inr h' => exact ih h' _
+    }
+  }
+}
+
+theorem le_cons(x:Digits)(d:Digit):x ≤ x::d:=
+  (Decidable.em (x.isZero)).elim (λ h => zero_le _ h) (λ h => (not_zero_lt_cons h _).to_le)
+
 end nat
 end Digits
 end wkmath

@@ -60,5 +60,25 @@ theorem append_length_eq_length_add(x y:Digits):(x ++ y).length = x.length + y.l
     exact (std_peano_add_2 (length_isStd x) (length_isStd y')).symm
   }
 }
+
+theorem nat.le_neg_one(x:Digits):x ≤ x.toNegOne:=by{
+  induction x with
+  | nil => simp
+  | cons x' d ih => {
+    simp[toNegOne, nat.le]
+    cases ih.to_eq_or_lt with
+    | inl ih => {
+      apply Or.inr
+      match d with
+      | (0) | (1) | (2) => {
+        simp
+        exact ih
+      }
+    }
+    | inr ih => {
+      exact Or.inl ih
+    }
+  }
+}
 end Digits
 end wkmath
