@@ -334,5 +334,71 @@ theorem nat_eq_iff_toStdNat_eq{x y:Digits}:x =N y ↔ x.toStdNat = y.toStdNat:=
     exact toStdNat_nat_eq y
   })
 
+theorem toStdNat_cons_not_zero_step(x:Digits){d:Digit}(h:d ≠ (0)):(x::d).toStdNat = x.toStdNat::d:=by{
+  induction x using tails.recursion with
+  | base => match d with | (1) | (2) => {
+    rw[toStdNat]
+    simp
+    simp[head, tails]
+  }
+  | ind x h ih => {
+    rw[toStdNat]
+    simp
+    cases Decidable.em (head (Digits.noConfusion:x :: d ≠ ε) = (0)) with
+    | inl h' => {
+      simp[h']
+      have h'':=tails.cons_tails h d
+      rw[←h'']
+      rw[ih]
+      apply Eq.symm
+      rw[toStdNat]
+      simp[h]
+      have h''':=(head.cons_head h d).trans h'
+      simp[h''']
+    }
+    | inr h' => {
+      simp[h']
+      have h''':=head.cons_head h d
+      rw[←h'''] at h'
+      rw[toStdNat]
+      simp[h]
+      simp[h']
+      rw[←tails.cons_tails h d]
+      rw[append]
+      rw[←h''']
+    }
+  }
+}
+
+theorem toStdNat_not_ε_cons_step{x:Digits}(h:x.toStdNat ≠ ε)(d:Digit):(x::d).toStdNat = x.toStdNat::d:=by{
+  induction x using tails.recursion with
+  | base => contradiction
+  | ind x h' ih => {
+    rw[toStdNat]
+    simp
+    apply Eq.symm
+    rw[toStdNat]
+    simp[h']
+    simp[←head.cons_head h' d]
+    simp[←tails.cons_tails h' d]
+    simp[append]
+    cases Decidable.em (head h' = (0)) with
+    | inl h'' => {
+      simp[h'']
+      apply Eq.symm
+      apply ih
+      intro hn
+      apply h
+      rw[←isZero_iff_toStdNat_ε] at *
+      have h0:=eq_head_append_tails h'
+      rw[h''] at h0
+      rw[←h0]
+      apply λ h => zero_append_zero_isZero h hn
+      simp
+    }
+    | inr h'' => simp[h'']
+  }
+}
+
 end Digits
 end wkmath

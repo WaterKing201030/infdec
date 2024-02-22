@@ -623,5 +623,24 @@ theorem eq_iff_toStdInt_eq{x y:int}:x =I y ↔ x.toStdInt = y.toStdInt:=by{
     }
   }
 }
+
+theorem toStdInt_eq(x:int):x.toStdInt =I x:=by{
+  match x with
+  | ⟨x0, x1⟩ => {
+    simp[toStdInt,eq]
+    cases Decidable.em (x0.isZero) with
+    | inl h => simp[h]
+    | inr h => {
+      simp[h]
+      have h':¬x0.toStdNat.isZero:=by{
+        intro h'
+        apply h
+        exact Digits.nat_eq_zero_isZero (Digits.toStdNat_nat_eq x0) h'
+      }
+      simp[h']
+      exact Digits.toStdNat_nat_eq x0
+    }
+  }
+}
 end int
 end wkmath

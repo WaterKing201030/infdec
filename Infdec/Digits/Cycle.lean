@@ -1046,6 +1046,17 @@ theorem head_eq_rotl_tail{x:Digits}(h:x ≠ ε):head h = tail (by{intro h'; appl
   exact h'.symm
 }
 
+theorem heads_eq_rotr_tails{x:Digits}(h:x ≠ ε):heads h = tails (by{intro h'; apply h; have h':=congrArg rotl h'; simp[rotr_rotl_cancel] at h';simp[rotl] at h'; exact h'}:x.rotr ≠ ε):=by{
+  match x with
+  | _::_ => simp[heads, rotr, tails_of_head_append_tails]
+}
+
+theorem tails_eq_rotl_heads{x:Digits}(h:x ≠ ε):tails h = heads (by{intro h'; apply h; have h':=congrArg rotr h'; simp[rotl_rotr_cancel] at h'; simp[rotr] at h'; exact h'}:x.rotl ≠ ε):=by{
+  have h':=heads_eq_rotr_tails (by{intro h'; apply h; have h':=congrArg rotr h'; simp[rotl_rotr_cancel] at h'; simp[rotr] at h'; exact h'}:x.rotl ≠ ε)
+  simp[rotl_rotr_cancel] at h'
+  exact h'.symm
+}
+
 theorem minCyc_head_eq_head{x:Digits}(h:x ≠ ε):head (not_ε_minCyc_not_ε h:x.minCyc ≠ ε) = head h := by{
   repeat rw[head_eq_rotl_tail]
   simp[rotl_minCyc_comm]

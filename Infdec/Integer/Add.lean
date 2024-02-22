@@ -270,5 +270,74 @@ theorem add_zero(x:int){y:int}(h:y.isZero):x + y =I x:=by{
     }
   }
 }
+
+theorem zero_add{x:int}(h:x.isZero)(y:int):x + y =I y:=
+  (add.comm _ _).trans (add_zero _ h)
+
+theorem add_congr{x y z w:int}(h0:x =I z)(h1:y =I w):x + y =I z + w:=by{
+  match x, y, z, w with
+  | ⟨x0, x1⟩, ⟨y0, y1⟩, ⟨z0, z1⟩, ⟨w0, w1⟩ => {
+    cases Decidable.em (y0.isZero) with
+    | inl h2 => {
+      simp[eq] at h1
+      simp[h2] at h1
+      have h2:(⟨y0, y1⟩:int).isZero:=h2
+      have h1:(⟨w0, w1⟩:int).isZero:=h1
+      exact (add_zero _ h2).trans (h0.trans (add_zero _ h1).symm)
+    }
+    | inr h2 => {
+      simp[eq] at h0
+      cases Decidable.em (x0.isZero) with
+      | inl h3 => {
+        simp[h3] at h0
+        have h0:(⟨z0, z1⟩:int).isZero:=h0
+        have h3:(⟨x0, x1⟩:int).isZero:=h3
+        apply (add.comm _ _).trans
+        apply eq.symm
+        apply (add.comm _ _).trans
+        apply (add_zero _ h0).trans
+        apply eq.symm
+        apply (add_zero _ h3).trans
+        exact h1
+      }
+      | inr h3 => {
+        simp[h3] at h0
+        simp[eq] at h1
+        simp[h2] at h1
+        simp[h0.right, h1.right]
+        match z1, w1 with
+        | true, true
+        | false, false => {
+          simp[add]
+          apply same_sign_nat_eq_to_eq
+          simp
+          exact Digits.nat.eq_of_eq_add_eq h0.left h1.left
+          simp
+        }
+        | true, false
+        | false, true => {
+          simp[add]
+          cases Decidable.em (y0 ≤ x0) with
+          | inl h => {
+            have h':w0 ≤ z0:=Digits.nat.le_of_le_of_eq (Digits.nat.le_of_eq_of_le h1.left.symm h) h0.left
+            simp[h, h']
+            apply same_sign_nat_eq_to_eq
+            simp
+            exact Digits.nat.eq_of_eq_sub_eq h0.left h1.left
+            simp
+          }
+          | inr h => {
+            have h':¬w0 ≤ z0:=λ h' => h (Digits.nat.le_of_le_of_eq (Digits.nat.le_of_eq_of_le h1.left h') h0.left.symm)
+            simp[h, h']
+            apply same_sign_nat_eq_to_eq
+            simp
+            exact Digits.nat.eq_of_eq_sub_eq h1.left h0.left
+            simp
+          }
+        }
+      }
+    }
+  }
+}
 end int
 end wkmath

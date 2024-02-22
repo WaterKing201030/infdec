@@ -129,7 +129,7 @@ termination_by' {
 def movr{n x:Digits}(h0:n.isStdNat)(h1:n ≠ ε)(h2:x ≠ ε)(e:int):cyc:=
   if (Digits.tail h1) = (Digits.tail h2) then
     if h:(Digits.heads h1) = ε then
-      ⟨ε, x.rotr, e + int.One, by{rw[Digits.rotr_iff_rotr', Digits.rotr'];simp[h2];exact Digits.not_ε_append Digits.noConfusion _}⟩
+      ⟨ε, x.rotr, (e + int.One).toStdInt, by{rw[Digits.rotr_iff_rotr', Digits.rotr'];simp[h2];exact Digits.not_ε_append Digits.noConfusion _}⟩
     else
       have h':x.rotr ≠ ε:=by{rw[Digits.rotr_iff_rotr', Digits.rotr'];simp[h2];exact Digits.not_ε_append Digits.noConfusion _}
       have : (Digits.heads h1) <L n:=by{
@@ -276,7 +276,7 @@ theorem eq.movr_eq(a:Digits)(d:Digit)(x:Digits)(i:int):⟨a::d, x::d, i, Digits.
       }
       | inr h0 => {
         simp[h0, Digits.eq_heads_cons_tail]
-        cases Decidable.em (Digits.head (_:Digits.minCyc (x::(0)) ≠ ε) = (0)) with
+        cases Decidable.em (Digits.head (Digits.not_ε_minCyc_not_ε Digits.noConfusion:Digits.minCyc (x::(0)) ≠ ε) = (0)) with
         | inl h1 => {
           simp[h1]
           apply Eq.symm
@@ -286,49 +286,245 @@ theorem eq.movr_eq(a:Digits)(d:Digit)(x:Digits)(i:int):⟨a::d, x::d, i, Digits.
             apply h0
             apply Digits.len.ε_unique
             rw[←congrArg (λ x => Digits.heads _ =L x) h2]
-            apply Digits.heads_len_cancel
+            apply Digits.heads_len_congr
             have h3:ε::(0) ++ x = (x::(0)).rotr:=by simp[Digits.rotr]
             rw[h3]
             rw[←Digits.rotr_minCyc_comm]
             exact (Digits.rotr_len_eq _).symm
           }
           simp[h2]
-          simp[Digits.eq_heads_cons_tail]
-          simp[Digits.minCyc_head_eq_head (Digits.not_ε_append Digits.noConfusion x:ε::(0) ++ x ≠ ε)]
-          simp[Digits.head_of_head_append_tails]
-          rw[movl]
-          have h3:Digits.tails (Digits.not_ε_minCyc_not_ε (Digits.not_ε_append Digits.noConfusion x):(ε::(0)++x).minCyc ≠ ε) ≠ ε :=by{
+          have h3:Digits.head (Digits.not_ε_minCyc_not_ε (Digits.not_ε_append Digits.noConfusion x):(ε::(0) ++ x).minCyc ≠ ε) = (0) := by{
+            rw[Digits.minCyc_head_eq_head (Digits.not_ε_append Digits.noConfusion x)]
+            rw[Digits.head_of_head_append_tails]
           }
           simp[h3]
-
+          simp[Digits.rotl_minCyc_comm]
+          have h4:(ε::(0) ++ x).rotl = x::(0):=by{
+            rw[Digits.rotl]
+            simp[Digits.not_ε_append]
+            rw[Digits.tails_of_head_append_tails, Digits.head_of_head_append_tails]
+            simp
+          }
+          simp[h4]
+          have h5:((i + int.One).toStdInt - int.One).toStdInt = i.toStdInt:=by{
+            rw[←int.eq_iff_toStdInt_eq]
+            rw[int.sub]
+            apply (int.add_congr (int.toStdInt_eq _) (int.eq.refl _)).trans
+            apply (int.add.assoc _ _ _).trans
+            exact int.add_zero _ (int.add_neg_eq_zero _)
+          }
+          simp[h5]
+          rw[movl]
+          simp[h1]
+          simp[h0]
+          simp[Digits.rotl_minCyc_comm]
         }
         | inr h1 => {
           simp[h1]
           rw[movl]
-
+          have h2 : Digits.heads (Digits.not_ε_minCyc_not_ε (Digits.not_ε_append Digits.noConfusion _):(ε::(0) ++ x).minCyc ≠ ε) ≠ ε:=by{
+            intro h
+            have h':=Digits.eq_heads_cons_tail (Digits.not_ε_minCyc_not_ε (Digits.not_ε_append (Digits.noConfusion:ε::(0) ≠ ε) x):(ε::(0) ++ x).minCyc ≠ ε)
+            apply h0
+            have h'':ε::(0) ++ x = (x::(0)).rotr:=rfl
+            simp[h''] at h'
+            simp[←Digits.rotr_minCyc_comm] at h'
+            apply Digits.len.ε_unique
+            have h0:Digits.heads (Digits.not_ε_minCyc_not_ε (Digits.not_ε_append (Digits.noConfusion:ε::(0) ≠ ε) x): Digits.minCyc ( ε :: (0) ++ x) ≠ ε ) =L ε:=by rw[h]; simp
+            apply λ h => Digits.len.eq.trans h h0
+            apply Digits.heads_len_congr
+            rw[h'', ←Digits.rotr_minCyc_comm]
+            exact (Digits.rotr_len_eq _).symm
+          }
+          simp[h2]
+          rw[Digits.minCyc_head_eq_head (Digits.not_ε_append Digits.noConfusion _)]
+          simp[Digits.head_of_head_append_tails]
+          simp[Digits.rotl_minCyc_comm]
+          have h'':(ε::(0) ++ x).rotl = x::(0):=by{
+            rw[Digits.rotl]
+            simp[Digits.not_ε_append (Digits.noConfusion:ε::(0) ≠ ε) x]
+            simp[Digits.tails_of_head_append_tails, Digits.head_of_head_append_tails]
+          }
+          simp[h'']
+          have h5:((i + int.One).toStdInt - int.One).toStdInt = i.toStdInt:=by{
+            rw[←int.eq_iff_toStdInt_eq]
+            rw[int.sub]
+            apply (int.add_congr (int.toStdInt_eq _) (int.eq.refl _)).trans
+            apply (int.add.assoc _ _ _).trans
+            exact int.add_zero _ (int.add_neg_eq_zero _)
+          }
+          rw[h5]
+          rw[movl]
+          simp[h0, h1]
         }
       }
     }
-    | (1)
+    | (1) => {
+      have h0{d:Digit}(h:d ≠ (0)):(a::d).toStdNat ≠ ε:=by{
+        intro h'
+        have h':=Digits.toStdNat_ε_isZero h'
+        simp[Digits.isZero] at h'
+        exact h h'.right
+      }
+      simp[h0 _]
+      simp[h']
+      rw[movl]
+      cases Decidable.em (Digits.heads (Digits.not_ε_minCyc_not_ε (Digits.not_ε_append (Digits.noConfusion:ε::(1) ≠ ε) x)) = ε) with
+      | inl h1 => {
+        simp[h1]
+        have h2:Digits.tail (Digits.not_ε_minCyc_not_ε (Digits.not_ε_append (Digits.noConfusion:ε::(1) ≠ ε) x)) = (1):=by{
+          have h2:(ε::(1) ++ x).minCyc = ε::(1):=by{
+            have h2:ε::(1) ++ x = (x::(1)).rotr:=by simp[Digits.rotr]
+            rw[h2]
+            rw[←Digits.rotr_minCyc_comm]
+            have h3:ε::(1) = (ε::(1)).rotr:=by simp[Digits.rotr]
+            rw[h3]
+            apply congrArg Digits.rotr
+            rw[←Digits.eq_heads_cons_tail (Digits.not_ε_minCyc_not_ε (Digits.noConfusion:x::(1) ≠ ε))]
+            simp
+            apply And.intro
+            . {
+              apply Digits.len.ε_unique
+              rw[←congrArg (λ x:Digits => _ =L x) h1]
+              apply Digits.heads_len_congr (Digits.not_ε_minCyc_not_ε Digits.noConfusion) (Digits.not_ε_minCyc_not_ε (Digits.not_ε_append (Digits.noConfusion:ε::(1) ≠ ε) x))
+              rw[h2, ←Digits.rotr_minCyc_comm]
+              exact (Digits.rotr_len_eq _).symm
+            }
+            . {
+              exact Digits.minCyc_tail_eq_tail Digits.noConfusion
+            }
+          }
+          simp[h2]
+          simp[Digits.tail]
+        }
+        simp[h2]
+        rw[movr]
+        simp[Digits.minCyc_tail_eq_tail (Digits.noConfusion:x::(1) ≠ ε)]
+        simp[Digits.toStdNat_cons_not_zero_step]
+        simp[Digits.tail, Digits.heads]
+        simp[h]
+        rw[Digits.rotr_minCyc_comm]
+        simp[Digits.rotr]
+        apply int.eq_iff_toStdInt_eq.mp
+        exact int.add_congr (int.toStdInt_eq i) (int.eq.refl _)
+      }
+      | inr h1 => {
+        simp[h1]
+        have h2:Digits.head (Digits.not_ε_minCyc_not_ε (Digits.not_ε_append (Digits.noConfusion:ε::(1) ≠ ε) x):(ε::(1)++x).minCyc ≠ ε) = (1):=by{
+          rw[Digits.minCyc_head_eq_head (Digits.not_ε_append (Digits.noConfusion:ε::(1) ≠ ε) x)]
+          rw[Digits.head_of_head_append_tails]
+        }
+        simp[h2]
+        rw[movr]
+        simp[h0 _]
+        simp[Digits.minCyc_tail_eq_tail (Digits.noConfusion:x::(1) ≠ ε)]
+        simp[Digits.toStdNat_cons_not_zero_step]
+        simp[Digits.tail, Digits.heads]
+        simp[h]
+        rw[Digits.rotr_minCyc_comm]
+        simp[Digits.rotr]
+        apply int.eq_iff_toStdInt_eq.mp
+        exact int.add_congr (int.toStdInt_eq i) (int.eq.refl _)
+      }
+    }
     | (2) => {
-
+      have h0{d:Digit}(h:d ≠ (0)):(a::d).toStdNat ≠ ε:=by{
+        intro h'
+        have h':=Digits.toStdNat_ε_isZero h'
+        simp[Digits.isZero] at h'
+        exact h h'.right
+      }
+      simp[h0 _]
+      simp[h']
+      rw[movl]
+      cases Decidable.em (Digits.heads (Digits.not_ε_minCyc_not_ε (Digits.not_ε_append (Digits.noConfusion:ε::(2) ≠ ε) x)) = ε) with
+      | inl h1 => {
+        simp[h1]
+        have h2:Digits.tail (Digits.not_ε_minCyc_not_ε (Digits.not_ε_append (Digits.noConfusion:ε::(2) ≠ ε) x)) = (2):=by{
+          have h2:(ε::(2) ++ x).minCyc = ε::(2):=by{
+            have h2:ε::(2) ++ x = (x::(2)).rotr:=by simp[Digits.rotr]
+            rw[h2]
+            rw[←Digits.rotr_minCyc_comm]
+            have h3:ε::(2) = (ε::(2)).rotr:=by simp[Digits.rotr]
+            rw[h3]
+            apply congrArg Digits.rotr
+            rw[←Digits.eq_heads_cons_tail (Digits.not_ε_minCyc_not_ε (Digits.noConfusion:x::(2) ≠ ε))]
+            simp
+            apply And.intro
+            . {
+              apply Digits.len.ε_unique
+              rw[←congrArg (λ x:Digits => _ =L x) h1]
+              apply Digits.heads_len_congr (Digits.not_ε_minCyc_not_ε Digits.noConfusion) (Digits.not_ε_minCyc_not_ε (Digits.not_ε_append (Digits.noConfusion:ε::(2) ≠ ε) x))
+              rw[h2, ←Digits.rotr_minCyc_comm]
+              exact (Digits.rotr_len_eq _).symm
+            }
+            . {
+              exact Digits.minCyc_tail_eq_tail Digits.noConfusion
+            }
+          }
+          simp[h2]
+          simp[Digits.tail]
+        }
+        simp[h2]
+        rw[movr]
+        simp[Digits.minCyc_tail_eq_tail (Digits.noConfusion:x::(2) ≠ ε)]
+        simp[Digits.toStdNat_cons_not_zero_step]
+        simp[Digits.tail, Digits.heads]
+        simp[h]
+        rw[Digits.rotr_minCyc_comm]
+        simp[Digits.rotr]
+        apply int.eq_iff_toStdInt_eq.mp
+        exact int.add_congr (int.toStdInt_eq i) (int.eq.refl _)
+      }
+      | inr h1 => {
+        simp[h1]
+        have h2:Digits.head (Digits.not_ε_minCyc_not_ε (Digits.not_ε_append (Digits.noConfusion:ε::(2) ≠ ε) x):(ε::(2)++x).minCyc ≠ ε) = (2):=by{
+          rw[Digits.minCyc_head_eq_head (Digits.not_ε_append (Digits.noConfusion:ε::(2) ≠ ε) x)]
+          rw[Digits.head_of_head_append_tails]
+        }
+        simp[h2]
+        rw[movr]
+        simp[h0 _]
+        simp[Digits.minCyc_tail_eq_tail (Digits.noConfusion:x::(2) ≠ ε)]
+        simp[Digits.toStdNat_cons_not_zero_step]
+        simp[Digits.tail, Digits.heads]
+        simp[h]
+        rw[Digits.rotr_minCyc_comm]
+        simp[Digits.rotr]
+        apply int.eq_iff_toStdInt_eq.mp
+        exact int.add_congr (int.toStdInt_eq i) (int.eq.refl _)
+      }
     }
   }
   | inr h => {
     simp[h]
-    have h':(a::d).toStdNat ≠ ε:=by{
-      intro h'
+    have h'':(a::d).toStdNat ≠ ε:=by{
+      intro h''
       apply h
       rw[←Digits.isZero_iff_toStdNat_ε] at *
-      rw[Digits.isZero] at h'
-      exact h'.left
+      rw[Digits.isZero] at h''
+      exact h''.left
     }
+    simp[h'']
+    have h''':=Digits.toStdNat_not_ε_cons_step h d
+    simp[h''']
+    rw[movr]
+    simp[Digits.minCyc_tail_eq_tail]
     simp[h']
+    simp[Digits.tail]
+    simp[Digits.heads]
+    simp[h]
+    have h0:(i.toStdInt + int.One).toStdInt = (i + int.One).toStdInt:=by{
+      apply int.eq_iff_toStdInt_eq.mp
+      exact int.add_congr (int.toStdInt_eq i) (int.eq.refl _)
+    }
+    simp[h0]
+    simp[Digits.rotr_minCyc_comm]
   }
 }
 
-theorem eq.movl{d:Digit}{a x:Digits}{i:int}:⟨a::d, x::d, i - int.One, Digits.noConfusion⟩ =C ⟨a, (ε::d)++x, i, Digits.not_ε_append Digits.noConfusion x⟩:=by{
-  apply movr.trans
+theorem eq.movl_eq{d:Digit}{a x:Digits}{i:int}:⟨a::d, x::d, i - int.One, Digits.noConfusion⟩ =C ⟨a, (ε::d)++x, i, Digits.not_ε_append Digits.noConfusion x⟩:=by{
+  apply (movr_eq _ _ _ _).trans
   apply refl' (Digits.nat.eq.refl _) (Eq.refl _)
   rw[int.sub]
   apply (int.add.assoc _ _ _).trans
