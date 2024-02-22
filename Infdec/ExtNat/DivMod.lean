@@ -65,26 +65,6 @@ infixl:70 " % " => mod
   mul div cancel
  -/
 
-def toNegOne:Digits → Digits
-  | ε => ε
-  | x::_ => (x.toNegOne)::(2)
-
-theorem toNegOne_eq_of_len_eq{x y:Digits}(h:x =L y):x.toNegOne = y.toNegOne:=by{
-  match x, y with
-  | ε, ε => simp
-  | _::_, _::_ => {
-    simp[toNegOne]
-    simp[len.eq] at h
-    exact toNegOne_eq_of_len_eq h
-  }
-}
-
-theorem head_append_toNegOne_eq_toNegOne_cons_Tail(x:Digits):(ε::(2))++x.toNegOne=x.toNegOne::(2):=by{
-  induction x with
-  | nil => simp[toNegOne]
-  | cons xs xd ih => rw[toNegOne, append, ih]
-}
-
 theorem divmod''_zero(x:Digits){y:Digits}(h:y.isZero):divmod'' x y = ((2), x):=by{
   rw[divmod'']
   have h':(y + y).isZero:=nat_eq_zero_isZero' (nat.add_zero h) h

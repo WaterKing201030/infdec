@@ -59,5 +59,112 @@ theorem nat.sub_not_zero_lt{x y:Digits}(hx:¬x.isZero)(hy:¬y.isZero):x - y < x:
   }
 }
 
+theorem nat.nat_eq_sub_zero{x y:Digits}(h:x =N y):(x - y).isZero:=by{
+  have h:x - y + y =N ε + y:=by{
+    rw[add.ε_add]
+    exact (sub_add_cancel h.symm.to_le).trans h
+  }
+  have h:=add_right_cancel h (eq.refl y)
+  exact nat_eq_zero_isZero' h ε_isZero
+}
+
+theorem nat.sub_add_eq_sub_sub(x y z:Digits):x - (y + z) =N x - y - z:=by{
+  cases le_or_gt (y + z) x with
+  | inl h => {
+    have h0:x - (y + z) + (y + z) =N x:=sub_add_cancel h
+    have h1:x - y - z + (y + z) =N x:=by{
+      rw[add.comm y, ←add.assoc]
+      have h1:y ≤ x:=(add_right_le y z).trans h
+      have h2:z ≤ x - y:=by{
+        rw[add.comm] at h
+        exact add_left_le_of_le (le_of_le_of_eq h (sub_add_cancel h1).symm)
+      }
+      apply (eq_of_eq_add_eq (sub_add_cancel h2) (eq.refl y)).trans
+      exact sub_add_cancel h1
+    }
+    have h2:=h0.trans h1.symm
+    exact add_right_cancel h2 (eq.refl (y + z))
+  }
+  | inr h => {
+    rw[sub]
+    simp[h]
+    have h:x - y ≤ z:=by{
+      cases le_or_gt y x with
+      | inl h' => {
+        rw[add.comm] at h
+        exact (add_left_lt_of_lt (lt_of_eq_of_lt (sub_add_cancel h') h)).to_le
+      }
+      | inr h => {
+        rw[sub]
+        simp[h]
+        exact ε_le z
+      }
+    }
+    rw[le_iff_eq_or_lt] at h
+    cases h with
+    | inl h => {
+      have h:=nat_eq_sub_zero h
+      exact zero_nat_eq_zero ε_isZero h
+    }
+    | inr h => {
+      rw[sub]
+      simp[h]
+    }
+  }
+}
+
+theorem nat.sub_comm(x y z:Digits):x - y - z =N x - z - y:=by{
+  apply (sub_add_eq_sub_sub x y z).symm.trans
+  rw[add.comm]
+  exact sub_add_eq_sub_sub x z y
+}
+
+theorem nat.add_sub_comm{x y:Digits}(h:y ≤ x)(z:Digits):x - y + z =N x + z - y:=by{
+  have h':=h.trans (add_right_le x z)
+  have h'':x - y + z + y =N x + z - y + y:=by{
+    rw[add.assoc, add.comm z, ←add.assoc]
+    apply λ h => eq.trans h (sub_add_cancel h').symm
+    apply λ h => eq_of_eq_add_eq h (eq.refl z)
+    exact sub_add_cancel h
+  }
+  exact add_right_cancel h'' (eq.refl _)
+}
+
+theorem nat.add_sub_assoc(x:Digits){y z:Digits}(h:z ≤ y):x + y - z =N x + (y - z):=by{
+  have h':x + y - z + z =N x + (y - z) + z:=by{
+    have h':z ≤ x + y:=h.trans (add_left_le x y)
+    rw[add.assoc _ (y - z)]
+    exact (sub_add_cancel h').trans (eq_of_eq_add_eq (eq.refl x) (sub_add_cancel h)).symm
+  }
+  exact add_right_cancel h' (eq.refl z)
+}
+
+theorem nat.eq_of_eq_sub_eq{x y z w:Digits}(h0:x =N z)(h1:y =N w):x - y =N z - w:=by{
+  cases Decidable.em (x < y) with
+  | inl h => {
+    have h':=lt_of_lt_of_eq (lt_of_eq_of_lt h0.symm h) h1
+    rw[sub, sub]
+    simp[h, h']
+  }
+  | inr h => {
+    have h:=le_of_not_gt h
+    have h':=le_of_le_of_eq (le_of_eq_of_le h1.symm h) h0
+    have h'':x - y + y =N z - w + w:=((sub_add_cancel h).trans h0).trans (sub_add_cancel h').symm
+    exact add_right_cancel h'' h1
+  }
+}
+
+theorem nat.sub_sub_eq_sub_add{x y z:Digits}(h0:y ≤ x + z)(h1:z ≤ y):x - (y - z) =N x + z - y:=by{
+  have h2:y - z ≤ x:=add_left_le_of_le (le_of_eq_of_le (sub_add_cancel h1) h0)
+  have h3:x - (y - z) + (y - z) =N x + z - y + (y - z):=by{
+    apply (sub_add_cancel h2).trans
+    apply eq.symm
+    apply (add_sub_assoc _ h1).symm.trans
+    have h3:x + z - y + y =N x + z:=sub_add_cancel h0
+    exact (eq_of_eq_sub_eq h3 (eq.refl _)).trans (add_sub_cancel x z)
+  }
+  exact add_right_cancel h3 (eq.refl _)
+}
+
 end Digits
 end wkmath

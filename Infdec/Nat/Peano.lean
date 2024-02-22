@@ -12,6 +12,7 @@ theorem Zero_isStdNat:Zero.isStdNat:=by simp[isStdNat]
 theorem Zero_is_zero:Zero.isZero:=by simp[isZero]
 theorem One_isStdNat:One.isStdNat:=by simp[isStdNat]
 theorem One_is_not_zero:¬One.isZero:=by simp[isZero]
+theorem One_eq_Zero_Succ:One = Zero.Succ:=rfl
 theorem add_One_eq_add''_one(x:Digits):x + One = add'' x (1):=by{
   rw[One]
   match x with
@@ -44,6 +45,15 @@ theorem not_zero_is_Succ{x:Digits}(h:¬x.isZero):∃(y:Digits), y.Succ = x:=by{
     }
   }
 }
+
+theorem zero_lt_Succ{x:Digits}(h:x.isZero)(y:Digits):x < y.Succ:=by{
+  rw[Succ]
+  exact nat.zero_lt_notzero h (add.notzero'' One_is_not_zero)
+}
+
+theorem ε_lt_Succ(x:Digits):ε < x.Succ:=
+  zero_lt_Succ ε_isZero x
+
 theorem succ_cancel{x y:Digits}(h:x.Succ =N y.Succ):x =N y:=
   nat.add_right_cancel h (nat.eq.refl _)
 
@@ -57,15 +67,29 @@ theorem mul_One_nat_eq(x:Digits):x * One =N x:=by{
   exact nat.zero_add (by simp)
 }
 
-theorem le_iff_lt_Succ{x y:Digits}:x ≤ y ↔ x < y.Succ:=
+theorem nat.le_iff_lt_Succ{x y:Digits}:x ≤ y ↔ x < y.Succ:=
   Iff.intro
     (λ h => nat.lt_of_lt_of_eq (nat.le_iff_lt_add''_one.mp h) (add_digit_nat_eq_add'' y (1)).symm)
     (λ h => nat.le_iff_lt_add''_one.mpr (nat.lt_of_lt_of_eq h (add_digit_nat_eq_add'' y (1))))
 
-theorem lt_iff_Succ_le{x y:Digits}:x < y ↔ x.Succ ≤ y:=
+theorem nat.lt_iff_Succ_le{x y:Digits}:x < y ↔ x.Succ ≤ y:=
   Iff.intro
     (λ h => nat.le_of_eq_of_le (add_digit_nat_eq_add'' x (1)) (nat.lt_iff_add''_one_le.mp h))
     (λ h => nat.lt_iff_add''_one_le.mpr (nat.le_of_eq_of_le (add_digit_nat_eq_add'' x (1)).symm h))
+
+theorem nat.lt_succ_self(x:Digits):x < x.Succ:=
+  nat.add_right_not_zero_lt x One_is_not_zero
+
+theorem nat.one_le_iff_not_zero(x:Digits):One ≤ x ↔ ¬x.isZero:=by{
+  apply Iff.intro
+  . exact λ h h' => (lt.irrefl x) (lt_of_lt_of_le (zero_lt_notzero h' One_is_not_zero) h)
+  . {
+    intro h
+    rw[One_eq_Zero_Succ]
+    rw[←lt_iff_Succ_le]
+    exact zero_lt_notzero Zero_is_zero h
+  }
+}
 
 /- WellFound Relation -/
 section wf
@@ -317,8 +341,8 @@ theorem std_peano_1:Zero.isStdNat:=
   Zero_isStdNat
 theorem std_peano_2{x:Digits}(h:x.isStdNat):x.Succ.isStdNat:=
   add.closure h One_isStdNat
-theorem std_peano_3{x y:Digits}(hx:x.isStdNat)(hy:y.isStdNat)(h:x.Succ =N y.Succ):x = y:=
-  isStdNat.unique hx hy (peano_3 h)
+theorem std_peano_3{x y:Digits}(hx:x.isStdNat)(hy:y.isStdNat)(h:x.Succ = y.Succ):x = y:=
+  isStdNat.unique hx hy (peano_3 (by{rw[h]; exact nat.eq.refl _}))
 theorem std_peano_4{x:Digits}(_:x.isStdNat):x.Succ ≠N Zero:=
   peano_4 x Zero_is_zero
 theorem std_peano_5
@@ -405,10 +429,209 @@ theorem nat.lt.acc{x:Digits}:Acc nat.lt x:=
     (λ _ ih => Acc.intro _ (λ _ h => (le_iff_lt_Succ.mpr h).to_eq_or_lt.elim (λ h => acc_eq h.symm ih) ih.inv))
     _
 
-@[inline] instance nat.lt.instWF:WellFoundedRelation Digits:={
-  rel:=nat.lt
-  wf:=WellFounded.intro (λ _ => acc)
-}
+@[inline] instance nat.lt.wf:WellFounded lt:=
+  WellFounded.intro (λ _ => acc)
+
+@[inline] instance nat.lt.instWF:WellFoundedRelation Digits:=
+  ⟨lt, wf⟩
 end lt_wf
+
+def toNat:Digits → Nat
+  | ε => 0
+  | x::d => x.toNat * 3 + d.toNat
+
+theorem isZero_iff_toNat_eq_zero{x:Digits}:x.isZero ↔ x.toNat = 0:=by{
+  apply Iff.intro
+  . {
+    intro h
+    induction x with
+    | nil => simp
+    | cons _ _ ih => {
+      rw[isZero] at h
+      simp[h.right] at *
+      simp[toNat, Digit.toNat]
+      rw[ih h]
+    }
+  }
+  . {
+    intro h
+    induction x with
+    | nil => simp
+    | cons _ d ih => {
+      rw[isZero]
+      rw[toNat] at h
+      rw[Nat.add_eq_zero_iff] at h
+      match d with
+      | (1) | (2) => simp at h
+      | (0) => {
+        simp
+        apply ih
+        have h:=Nat.mul_eq_zero h.left
+        simp at h
+        exact h
+      }
+    }
+  }
+}
+
+theorem nat_eq_iff_toNat_eq{x y:Digits}:x =N y ↔ x.toNat = y.toNat:=by{
+  apply Iff.intro
+  . {
+    intro h
+    match x, y with
+    | ε, ε => rfl
+    | ε, _::_
+    | _::_, ε => rw[nat.eq] at h; rw[isZero_iff_toNat_eq_zero] at h; rw[h]; rfl
+    | _::_, _::_ => {
+      rw[nat.eq] at h
+      rw[h.right]
+      rw[toNat, toNat]
+      have h:=nat_eq_iff_toNat_eq.mp h.left
+      rw[h]
+    }
+  }
+  . {
+    intro h
+    match x, y with
+    | ε, ε => exact nat.eq.refl _
+    | ε, _::_ => {
+      rw[toNat] at h
+      have h:=h.symm
+      rw[←isZero_iff_toNat_eq_zero] at h
+      exact zero_nat_eq_zero ε_isZero h
+    }
+    | _::_, ε => {
+      rw[toNat] at h
+      rw[←isZero_iff_toNat_eq_zero] at h
+      exact zero_nat_eq_zero h ε_isZero
+    }
+    | x'::xd, y'::yd => {
+      rw[nat.eq]
+      rw[toNat, toNat] at h
+      have h:=Nat.divmod_unique _ _ Digit.toNat_lt_3 Digit.toNat_lt_3 h
+      rw[←Digit.eq_iff_toNat_eq] at h
+      exact ⟨nat_eq_iff_toNat_eq.mpr h.left,h.right⟩
+    }
+  }
+}
+
+theorem succ_toNat_eq_toNat_succ{x:Digits}:x.Succ.toNat = x.toNat.succ:=by{
+  rw[Succ, One]
+  match x with
+  | ε => simp
+  | x'::xd => {
+    match xd with
+    | (0) | (1) => simp[add,add', Digit.half_add3, toNat, Digit.toNat]
+    | (2) => {
+      simp[add, add', Digit.half_add3]
+      rw[←add_One_eq_add''_one, ←Succ]
+      simp[toNat, Digit.toNat]
+      rw[Nat.succ_eq_add_one]
+      rw[Nat.add_assoc]
+      have : 2 + 1 = 3 := by simp
+      rw[this]
+      rw[←Nat.succ_mul]
+      rw[succ_toNat_eq_toNat_succ]
+    }
+  }
+}
+
+theorem add_toNat_eq_toNat_add{x y:Digits}:(x + y).toNat = x.toNat + y.toNat:=by{
+  induction y using peano_5 with
+  | zero y h => {
+    rw[nat_eq_iff_toNat_eq.mp (nat.add_zero h)]
+    rw[isZero_iff_toNat_eq_zero.mp h]
+    simp
+  }
+  | succ y ih => {
+    rw[strict_peano_add_2, succ_toNat_eq_toNat_succ, ih, succ_toNat_eq_toNat_succ, Nat.add_succ]
+  }
+}
+
+theorem mul_toNat_eq_toNat_mul{x y:Digits}:(x * y).toNat = x.toNat * y.toNat:=by{
+  induction y using peano_5 with
+  | zero y h => {
+    rw[nat_eq_iff_toNat_eq.mp (zero_nat_eq_zero (peano_mul_1 _ h) ε_isZero)]
+    rw[isZero_iff_toNat_eq_zero.mp h]
+    simp
+  }
+  | succ y ih => {
+    rw[nat_eq_iff_toNat_eq.mp (peano_mul_2 _ _), add_toNat_eq_toNat_add]
+    rw[succ_toNat_eq_toNat_succ, Nat.mul_succ, ih]
+  }
+}
+
+theorem toNat_lt_of_lt{x y:Digits}(h:x < y):x.toNat < y.toNat:=by{
+  match x, y with
+  | ε, ε
+  | _::_, ε => contradiction
+  | ε, _::_ => {
+    simp[nat.lt] at h
+    rw[toNat]
+    rw[isZero_iff_toNat_eq_zero] at h
+    exact Nat.zero_lt_of_ne_zero h
+  }
+  | x'::xd, y'::yd => {
+    simp[nat.lt] at h
+    cases h with
+    | inl h => {
+      rw[toNat, toNat]
+      apply Nat.lt_of_lt_of_le (Nat.add_lt_add_left Digit.toNat_lt_3 _)
+      apply λ h => Nat.le_trans h (Nat.le_add_right _ _)
+      rw[←Nat.succ_mul]
+      apply Nat.mul_le_mul_right
+      apply Nat.succ_le_of_lt
+      exact toNat_lt_of_lt h
+    }
+    | inr h => {
+      rw[toNat, toNat]
+      rw[nat_eq_iff_toNat_eq.mp h.right]
+      exact Nat.add_lt_add_left (Digit.lt_iff_toNat_lt.mp h.left) _
+    }
+  }
+}
+
+theorem lt_of_toNat_lt{x y:Digits}(h:x.toNat < y.toNat):x < y:=by{
+  match x, y with
+  | ε, ε
+  | _::_, ε => contradiction
+  | ε, _::_ => {
+    simp[nat.lt]
+    have h:=Nat.not_eq_zero_of_lt h
+    rw[isZero_iff_toNat_eq_zero]
+    exact h
+  }
+  | x'::xd, y'::yd => {
+    simp[nat.lt]
+    rw[toNat, toNat] at h
+    cases nat.trichotomous x' y' with
+    | inl h' => exact Or.inl h'
+    | inr h' => cases h' with
+      | inl h' => {
+        rw[nat_eq_iff_toNat_eq.mp h'] at h
+        repeat rw[Nat.add_comm (y'.toNat * 3)] at h
+        have h:=Nat.lt_of_lt_add_right h
+        exact Or.inr ⟨Digit.lt_iff_toNat_lt.mpr h,h'⟩
+      }
+      | inr h' => {
+        have h':=toNat_lt_of_lt h'
+        have h:Nat.mul x'.toNat 3 < y'.toNat * 3 + 3:=Nat.lt_trans (Nat.lt_of_le_of_lt (Nat.le_add_right _ _) h) (Nat.add_lt_add_left Digit.toNat_lt_3 _)
+        rw[←Nat.succ_mul] at h
+        have h:=Nat.lt_of_lt_mul_right h
+        have h:=Nat.le_of_lt_succ h
+        exact (Nat.not_le_of_gt h' h).elim
+      }
+  }
+}
+
+theorem lt_iff_toNat_lt{x y:Digits}:x < y ↔ x.toNat < y.toNat:=
+  ⟨toNat_lt_of_lt,lt_of_toNat_lt⟩
+
+theorem le_iff_toNat_le{x y:Digits}:x ≤ y ↔ x.toNat ≤ y.toNat:=by{
+  rw[nat.le_iff_eq_or_lt]
+  rw[nat_eq_iff_toNat_eq]
+  rw[lt_iff_toNat_lt]
+  exact Nat.le_iff_eq_or_lt.symm
+}
 end Digits
 end wkmath

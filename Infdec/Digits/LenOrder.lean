@@ -107,6 +107,9 @@ theorem eq.symm{x y:Digits}(h:x =L y):y =L x:=by{
   | _::_, _::_ => rw[eq] at *; exact h.symm
 }
 
+theorem eq.symm_iff{x y:Digits}:x =L y ↔ y =L x:=
+  Iff.intro (λ h => h.symm) (λ h => h.symm)
+
 theorem eq.trans{x y z:Digits}(h0:x =L y)(h1:y =L z):x =L z:=by{
   match x, y, z with
   | ε, _::_, _
@@ -465,6 +468,73 @@ theorem induction.{u}
     }
     exact quot_ind h1 x
   }
+
+theorem le_iff_lt_cons(x y:Digits)(d:Digit):x ≤L y ↔ x <L y::d:=by{
+  apply Iff.intro
+  . {
+    intro h
+    rw[le_iff_eq_or_lt] at h
+    exact h.elim (λ h => lt_of_eq_of_lt h (lt_cons _ _)) (λ h => h.trans (lt_cons _ _))
+  }
+  . {
+    intro h
+    match x with
+    | ε => exact ε_le _
+    | xs::xd => match y with
+      | ε => rw[lt] at h; exact (not_lt_ε xs h).elim
+      | ys::yd => rw[lt] at h; rw[le]; exact (le_iff_lt_cons _ _ _).mpr h
+  }
+}
+
+theorem lt_iff_cons_le(x y:Digits)(d:Digit):x <L y ↔ x::d ≤L y:=by{
+  match x, y with
+  | _, ε => simp[lt, le, not_lt_ε]
+  | ε, _::_ => simp[lt, le, ε_le]
+  | _::_, _::_ => simp[lt, le]; exact lt_iff_cons_le _ _ _
+}
+
+theorem lt.acc(x:Digits):Acc lt x:=by{
+  induction x with
+  | nil => {
+    apply Acc.intro
+    intro _ h
+    exact ((not_lt_ε _) h).elim
+  }
+  | cons xs xd ih => {
+    apply Acc.intro
+    intro y h
+    rw[←le_iff_lt_cons] at h
+    rw[le_iff_eq_or_lt] at h
+    cases h with
+    | inl h => {
+      apply Acc.intro
+      intro z h'
+      have h'':=lt_of_lt_of_eq h' h
+      exact ih.inv h''
+    }
+    | inr h => exact ih.inv h
+  }
+}
+
+@[inline] instance lt.wf:WellFounded lt:=
+  WellFounded.intro acc
+
+theorem strong_induction
+  {P:Digits → Prop}(base:P ε)
+  (ind:∀(x:Digits), (∀ (y:Digits), y <L x → P y) → P x)
+  (x:Digits) : P x :=by{
+    cases h:x with
+    | nil => exact base
+    | cons xs xd => {
+      apply ind
+      intro y _
+      exact strong_induction base ind y
+    }
+  }
+termination_by' {
+  rel:=lt
+  wf:=lt.wf
+}
 
 end len
 end Digits

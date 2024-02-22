@@ -54,6 +54,9 @@ theorem nat.eq.symm{x y:Digits}(h:x =N y):y =N x:=by{
   | xs::xd, ys::yd => simp[eq] at *; exact And.intro h.left.symm h.right.symm
 }
 
+theorem nat.eq.symm_iff{x y:Digits}:x =N y ↔ y =N x:=
+  Iff.intro (λ h => h.symm) (λ h => h.symm)
+
 theorem nat_eq_zero_isZero{x y:Digits}(h:x =N y)(hx:x.isZero):y.isZero:=by{
   match x, y with
   | _, ε => simp[isZero]
@@ -296,10 +299,105 @@ theorem isStdNat.not_ε_cons{x:Digits}(hn:x≠ε)(h:x.isStdNat)(d:Digit):(x::d).
   exact h
 }
 
+theorem isStdNat_heads_isStdNat{x:Digits}(hn:x ≠ ε)(h:x.isStdNat):(heads hn).isStdNat:=by{
+  match x with
+  | ε::_ => simp[heads, isStdNat]
+  | (_::_)::_ => {
+    simp[isStdNat] at h
+    simp[isStdNat, heads]
+    intro h'
+    apply h
+    simp[head]
+    exact h'
+  }
+}
+
 theorem isStdNat_isZero_is_ε{x:Digits}(h0:x.isStdNat)(h1:x.isZero):x = ε:=by{
   have h1:=toStdNat.zero_to_nil h1
   rw[stdNat_toStdNat_eq h0] at h1
   exact h1
+}
+
+theorem toStdNat_ε_isZero{x:Digits}(h0:x.toStdNat = ε):x.isZero:=by{
+  have h0:x.toStdNat =N ε:=by rw[h0]; simp
+  exact nat_eq_zero_isZero' ((toStdNat_nat_eq x).symm.trans h0) ε_isZero
+}
+
+theorem isZero_iff_toStdNat_ε{x:Digits}:x.isZero ↔ x.toStdNat = ε:=
+  ⟨toStdNat.zero_to_nil,toStdNat_ε_isZero⟩
+
+theorem nat_eq_iff_toStdNat_eq{x y:Digits}:x =N y ↔ x.toStdNat = y.toStdNat:=
+  Iff.intro toStdNat_eq_of_nat_eq (by{
+    intro h
+    apply (toStdNat_nat_eq x).symm.trans
+    rw[h]
+    exact toStdNat_nat_eq y
+  })
+
+theorem toStdNat_cons_not_zero_step(x:Digits){d:Digit}(h:d ≠ (0)):(x::d).toStdNat = x.toStdNat::d:=by{
+  induction x using tails.recursion with
+  | base => match d with | (1) | (2) => {
+    rw[toStdNat]
+    simp
+    simp[head, tails]
+  }
+  | ind x h ih => {
+    rw[toStdNat]
+    simp
+    cases Decidable.em (head (Digits.noConfusion:x :: d ≠ ε) = (0)) with
+    | inl h' => {
+      simp[h']
+      have h'':=tails.cons_tails h d
+      rw[←h'']
+      rw[ih]
+      apply Eq.symm
+      rw[toStdNat]
+      simp[h]
+      have h''':=(head.cons_head h d).trans h'
+      simp[h''']
+    }
+    | inr h' => {
+      simp[h']
+      have h''':=head.cons_head h d
+      rw[←h'''] at h'
+      rw[toStdNat]
+      simp[h]
+      simp[h']
+      rw[←tails.cons_tails h d]
+      rw[append]
+      rw[←h''']
+    }
+  }
+}
+
+theorem toStdNat_not_ε_cons_step{x:Digits}(h:x.toStdNat ≠ ε)(d:Digit):(x::d).toStdNat = x.toStdNat::d:=by{
+  induction x using tails.recursion with
+  | base => contradiction
+  | ind x h' ih => {
+    rw[toStdNat]
+    simp
+    apply Eq.symm
+    rw[toStdNat]
+    simp[h']
+    simp[←head.cons_head h' d]
+    simp[←tails.cons_tails h' d]
+    simp[append]
+    cases Decidable.em (head h' = (0)) with
+    | inl h'' => {
+      simp[h'']
+      apply Eq.symm
+      apply ih
+      intro hn
+      apply h
+      rw[←isZero_iff_toStdNat_ε] at *
+      have h0:=eq_head_append_tails h'
+      rw[h''] at h0
+      rw[←h0]
+      apply λ h => zero_append_zero_isZero h hn
+      simp
+    }
+    | inr h'' => simp[h'']
+  }
 }
 
 end Digits

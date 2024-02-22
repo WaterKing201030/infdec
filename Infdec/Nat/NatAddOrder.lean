@@ -1241,6 +1241,14 @@ theorem nat.lt_of_add_left_lt{x y:Digits}(h:x < y)(z:Digits):x + z < y + z:=by{
   exact lt_of_add_right_lt z h
 }
 
+theorem nat.le_of_add_right_le(x:Digits){y z:Digits}(h:y ≤ z):x + y ≤ x + z:=
+  h.to_eq_or_lt.elim (λ h => (eq_of_eq_add_eq (eq.refl x) h).to_le) (λ h => (lt_of_add_right_lt x h).to_le)
+
+theorem nat.le_of_add_left_le{x y:Digits}(h:x ≤ y)(z:Digits):x + z ≤ y + z:=by{
+  repeat rw[add.comm _ z]
+  exact le_of_add_right_le z h
+}
+
 theorem nat.add_right_lt_of_lt{x y z:Digits}(h:x + y < x + z):y < z:=by{
   repeat rw[add] at h
   exact add'_right_lt_of_lt h

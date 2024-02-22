@@ -52,6 +52,30 @@ section order_properties
   | (2), (1)
   | (2), (2) => instDecidableFalse
 
+theorem le_iff_toNat_le{x y:Digit}:x ≤ y ↔ x.toNat ≤ y.toNat:=
+  match x, y with
+  | (0), (1)
+  | (0), (2)
+  | (1), (2)
+  | (0), (0)
+  | (1), (0)
+  | (1), (1)
+  | (2), (0)
+  | (2), (1)
+  | (2), (2) => by simp
+
+theorem lt_iff_toNat_lt{x y:Digit}:x < y ↔ x.toNat < y.toNat:=
+  match x, y with
+  | (0), (1)
+  | (0), (2)
+  | (1), (2)
+  | (0), (0)
+  | (1), (0)
+  | (1), (1)
+  | (2), (0)
+  | (2), (1)
+  | (2), (2) => by simp
+
 theorem le.refl(x:Digit):x ≤ x:=by{
   match x with
   | (0)

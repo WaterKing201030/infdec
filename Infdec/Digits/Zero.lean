@@ -1,4 +1,5 @@
 import Infdec.Digits.Append
+import Infdec.Base
 
 /-
 Things needed for Representation
@@ -74,6 +75,32 @@ theorem zero_append_zero_isZero{x y:Digits}(hx:x.isZero)(hy:y.isZero):(x++y).isZ
   | cons ys yd ih => {
       simp[isZero] at *
       exact And.intro (ih hy.left) (hy.right)
+  }
+}
+
+theorem not_zero_append_isNotZero{x y:Digits}(hx:¬x.isZero):¬(x++y).isZero:=by{
+  induction y with
+  | nil => simp; exact hx
+  | cons y' d ih => {
+    simp[append, isZero]
+    match d with
+    | (0) => simp[ih]
+    | (1) | (2) => simp
+  }
+}
+
+theorem append_not_zero_isNotZero{x y:Digits}(hy:¬y.isZero):¬(x++y).isZero:=by{
+  induction y with
+  | nil => contradiction
+  | cons y' d ih => {
+    rw[isZero] at hy
+    rw[de_morgan_not_and] at hy
+    match d with
+    | (0) => {
+      simp at hy
+      simp[ih hy, append, isZero]
+    }
+    | (1) | (2) => simp[append, isZero]
   }
 }
 
