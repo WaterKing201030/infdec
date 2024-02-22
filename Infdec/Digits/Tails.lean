@@ -558,5 +558,10 @@ theorem eq_heads_cons_tail{x:Digits}(h:x ≠ ε):(heads h)::(tail h) = x:=
   match x with
   | _::_ => rfl
 
+theorem heads_len_cancel{x y:Digits}(h0:x ≠ ε)(h1:y ≠ ε)(h2:x =L y):heads h0 =L heads h1:=by{
+  match x, y with
+  | _::_, _::_ => simp[heads]; simp[len.eq] at h2; exact h2
+}
+
 end Digits
 end wkmath

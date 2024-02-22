@@ -60,7 +60,7 @@ def movl{x:Digits}{d:Digit}(hc:(x::d).minCyc = x::d)(e:int):cyc:=
     if d = (0) then
       ⟨ε, ε::(0), int.Zero, Digits.noConfusion⟩
     else
-      ⟨ε, x::d, e, Digits.noConfusion⟩
+    ⟨ε, x::d, e, Digits.noConfusion⟩
   else if h':Digits.head (Digits.noConfusion:x::d ≠ ε) = (0) then
     have hc':(x::d).rotl.minCyc = (x::d).rotl:=Digits.minCyc_rotl_minCyc hc
     have : Digits.headzerocountLt ((x::d).rotl) (x::d):=by{
@@ -108,7 +108,7 @@ def movl{x:Digits}{d:Digit}(hc:(x::d).minCyc = x::d)(e:int):cyc:=
       }
       exact Digits.nat.lt_iff_Succ_le.mpr this.to_le
     }
-    movl hc' (e + int.One)
+    movl hc' (e - int.One).toStdInt
   else
     ⟨ε, x::d, e, Digits.noConfusion⟩
 termination_by' {
@@ -116,6 +116,7 @@ termination_by' {
   wf:=InvImage.wf (λ x:(_:Digits) ×' (_:Digit) ×' _ => x.fst::x.snd.fst) Digits.headzerocountLt.wf
 }
 
+-- 这个得改成movl一样的参数
 def movr(n:Digits)(a:Digit)(x:Digits)(d:Digit)(e:int):cyc:=
   if a = d then
     match h:n with
@@ -127,7 +128,7 @@ def movr(n:Digits)(a:Digit)(x:Digits)(d:Digit)(e:int):cyc:=
     | n'::b =>
       have h':(x::d).rotr ≠ ε:=Digits.not_ε_append Digits.noConfusion _
       have : n' <L n:=by rw[h]; exact Digits.len.lt_cons _ _
-      movr n' b (Digits.heads h') (Digits.tail h') (e + int.One)
+      movr n' b (Digits.heads h') (Digits.tail h') (e + int.One).toStdInt
   else
     ⟨n::a, x::d, e, Digits.noConfusion⟩
 termination_by' {
@@ -207,6 +208,127 @@ theorem eq.minCyc(a x:Digits)(i:int)(h:x ≠ ε):⟨a, x, i, h⟩ =C ⟨a, x.min
     have h''':(x'::d).minCyc.minCyc = (x'::d).minCyc:=Digits.minCyc.idemp (x'::d)
     simp[h''', h']
   }
+}
+
+theorem eq.movr_eq(a:Digits)(d:Digit)(x:Digits)(i:int):⟨a::d, x::d, i, Digits.noConfusion⟩ =C ⟨a, (ε::d)++x, i + int.One, Digits.not_ε_append Digits.noConfusion x⟩:=by{
+  rw[eq]
+  have h':=Digits.eq_heads_cons_tail (Digits.not_ε_append (Digits.noConfusion:ε::d ≠ ε) x)
+  have h'':(⟨a, ε::d ++ x, i + int.One, Digits.not_ε_append Digits.noConfusion x⟩:cyc) = ⟨a, (Digits.heads (Digits.not_ε_append (Digits.noConfusion:ε::d ≠ ε) x))::(Digits.tail (Digits.not_ε_append (Digits.noConfusion:ε::d ≠ ε) x)), i + int.One, Digits.noConfusion⟩:=by simp[h']
+  rw[h'']
+  simp[toStdCyc]
+  cases Decidable.em (a.toStdNat = ε) with
+  | inl h => {
+    simp[h]
+    match d with
+    | (0) => {
+      have h''':(a::(0)).toStdNat = ε:=by{
+        rw[←Digits.isZero_iff_toStdNat_ε]
+        simp[Digits.isZero]
+        exact Digits.isZero_iff_toStdNat_ε.mpr h
+      }
+      simp[h''', h']
+      rw[movl]
+      cases Decidable.em (Digits.heads (Digits.not_ε_minCyc_not_ε (Digits.noConfusion:x::(0) ≠ ε)) = ε) with
+      | inl h0 => {
+        simp[h0]
+        have h1:x.isZero:=by{
+          have hc:(x::(0)).minCyc ≠ ε:=Digits.not_ε_minCyc_not_ε (Digits.noConfusion:x::(0) ≠ ε)
+          match hc':(x::(0)).minCyc with
+          | ε => contradiction
+          | y::yd => {
+            have hc'':(y::yd).isPostfixOf (x::(0)):=by{
+              apply Digits.isCycParent_isPostfixOf
+              rw[←hc']
+              exact Digits.isCycParent_minCyc _
+            }
+            rw[Digits.isPostfixOf] at hc''
+            simp[hc'] at h0
+            simp[Digits.heads] at h0
+            rw[h0, hc''.left] at hc'
+            have hc'':(ε::(0)).isZero:=by simp
+            have hc''':(x::(0)).isCycParent (Digits.minCyc (x::(0))):=Digits.isCycParent_minCyc _
+            rw[←hc'] at hc''
+            have hc''':=Digits.isCycParent_zero_isZero hc'' hc'''
+            rw[Digits.isZero] at hc'''
+            exact hc'''.left
+          }
+        }
+        have h2:ε::(0) ++ x = x::(0):=by{
+          rw[←Digits.append_tail x]
+          have h2:(ε::(0)).isZero:=by simp
+          exact Digits.zero_append_zero_comm h2 h1
+        }
+        simp[h2]
+        rw[movl]
+        have h3:(x::(0)).minCyc = ε::(0):=by{
+          apply Digits.not_ε_isZero_minCyc Digits.noConfusion
+          simp[Digits.isZero]
+          exact h1
+        }
+        simp[h0]
+        simp[h3]
+        simp[Digits.tail]
+      }
+      | inr h0 => {
+        simp[h0, Digits.eq_heads_cons_tail]
+        cases Decidable.em (Digits.head (_:Digits.minCyc (x::(0)) ≠ ε) = (0)) with
+        | inl h1 => {
+          simp[h1]
+          apply Eq.symm
+          rw[movl]
+          have h2:Digits.heads (Digits.not_ε_minCyc_not_ε (Digits.not_ε_append Digits.noConfusion x):((ε::(0))++x).minCyc ≠ ε) ≠ ε:=by{
+            intro h2
+            apply h0
+            apply Digits.len.ε_unique
+            rw[←congrArg (λ x => Digits.heads _ =L x) h2]
+            apply Digits.heads_len_cancel
+            have h3:ε::(0) ++ x = (x::(0)).rotr:=by simp[Digits.rotr]
+            rw[h3]
+            rw[←Digits.rotr_minCyc_comm]
+            exact (Digits.rotr_len_eq _).symm
+          }
+          simp[h2]
+          simp[Digits.eq_heads_cons_tail]
+          simp[Digits.minCyc_head_eq_head (Digits.not_ε_append Digits.noConfusion x:ε::(0) ++ x ≠ ε)]
+          simp[Digits.head_of_head_append_tails]
+          rw[movl]
+          have h3:Digits.tails (Digits.not_ε_minCyc_not_ε (Digits.not_ε_append Digits.noConfusion x):(ε::(0)++x).minCyc ≠ ε) ≠ ε :=by{
+          }
+          simp[h3]
+
+        }
+        | inr h1 => {
+          simp[h1]
+          rw[movl]
+
+        }
+      }
+    }
+    | (1)
+    | (2) => {
+
+    }
+  }
+  | inr h => {
+    simp[h]
+    have h':(a::d).toStdNat ≠ ε:=by{
+      intro h'
+      apply h
+      rw[←Digits.isZero_iff_toStdNat_ε] at *
+      rw[Digits.isZero] at h'
+      exact h'.left
+    }
+    simp[h']
+  }
+}
+
+theorem eq.movl{d:Digit}{a x:Digits}{i:int}:⟨a::d, x::d, i - int.One, Digits.noConfusion⟩ =C ⟨a, (ε::d)++x, i, Digits.not_ε_append Digits.noConfusion x⟩:=by{
+  apply movr.trans
+  apply refl' (Digits.nat.eq.refl _) (Eq.refl _)
+  rw[int.sub]
+  apply (int.add.assoc _ _ _).trans
+  have h'':(-int.One + int.One).isZero:=by simp[int.One, int.neg, int.add, Digits.sub, Digits.half_sub, Digits.half_sub', Digit.half_sub3, int.isZero]
+  exact int.add_zero i h''
 }
 
 @[inline] instance instDecidableEq{x y:cyc}:Decidable (x = y):=by{

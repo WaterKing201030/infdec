@@ -1003,5 +1003,43 @@ theorem isCycParent_zero_isZero{x y:Digits}(h:y.isZero)(h':x.isCycParent y):x.is
   exact replace_zero_isZero z h
 }
 
+theorem minCyc_tail_eq_tail{x:Digits}(h:x ≠ ε):tail (not_ε_minCyc_not_ε h:x.minCyc ≠ ε) = tail h:=by{
+  match x with
+  | x'::xd => {
+    have h':=not_ε_minCyc_not_ε h
+    have ⟨y', yd, hy⟩:=not_ε_exists_cons h'
+    have h0:(y'::yd).isPostfixOf (x'::xd):=by{
+      rw[←hy]
+      exact isCycParent_isPostfixOf (isCycParent_minCyc _)
+    }
+    simp[isPostfixOf] at h0
+    simp[hy]
+    simp[tail]
+    exact h0.left
+  }
+}
+
+theorem tail_eq_rotr_head{x:Digits}(h:x ≠ ε):tail h = head (by{intro h'; apply h; have h':=congrArg rotl h'; simp[rotr_rotl_cancel] at h';simp[rotl] at h'; exact h'}:x.rotr ≠ ε):=by{
+  match x with
+  | _::_ => {
+    simp[rotr, tail, head_of_head_append_tails]
+  }
+}
+
+theorem head_eq_rotl_tail{x:Digits}(h:x ≠ ε):head h = tail (by{intro h'; apply h; have h':=congrArg rotr h'; simp[rotl_rotr_cancel] at h'; simp[rotr] at h'; exact h'}:x.rotl ≠ ε):=by{
+  have h':=tail_eq_rotr_head (by{intro h'; apply h; have h':=congrArg rotr h'; simp[rotl_rotr_cancel] at h'; simp[rotr] at h'; exact h'}:x.rotl ≠ ε)
+  simp[rotl_rotr_cancel] at h'
+  exact h'.symm
+}
+
+theorem minCyc_head_eq_head{x:Digits}(h:x ≠ ε):head (not_ε_minCyc_not_ε h:x.minCyc ≠ ε) = head h := by{
+  repeat rw[head_eq_rotl_tail]
+  simp[rotl_minCyc_comm]
+  apply minCyc_tail_eq_tail
+}
+
+theorem ε_minCyc_ε{x:Digits}(h:x.minCyc = ε):x = ε:=
+  (Decidable.em (x = ε)).elim id (λ h' => (not_ε_minCyc_not_ε h' h).elim)
+
 end Digits
 end wkmath
