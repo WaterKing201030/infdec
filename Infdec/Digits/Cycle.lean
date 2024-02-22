@@ -669,6 +669,20 @@ def rotl(x:Digits):Digits:=
   else
     (tails h)::(head h)
 
+def rotr'(x:Digits):Digits:=
+  if h : x = ε then
+    ε
+  else
+    (ε::tail h)++(heads h)
+
+theorem rotr_iff_rotr':rotr = rotr':=by{
+  apply funext
+  intro x
+  match x with
+  | ε => simp
+  | _::_ => simp[rotr, rotr', heads, tail]
+}
+
 theorem rotr_rotl_cancel(x:Digits):x.rotr.rotl = x:=by{
   match x with
   | ε => simp
