@@ -57,7 +57,10 @@ def Zero:cyc:=⟨ε, ε::(0), ⟨ε, false⟩, Digits.noConfusion⟩
 
 def movl{x:Digits}{d:Digit}(hc:(x::d).minCyc = x::d)(e:int):cyc:=
   if h:x = ε then
-    ⟨ε, x::d, e, Digits.noConfusion⟩
+    if d = (0) then
+      ⟨ε, ε::(0), int.Zero, Digits.noConfusion⟩
+    else
+      ⟨ε, x::d, e, Digits.noConfusion⟩
   else if h':Digits.head (Digits.noConfusion:x::d ≠ ε) = (0) then
     have hc':(x::d).rotl.minCyc = (x::d).rotl:=Digits.minCyc_rotl_minCyc hc
     have : Digits.headzerocountLt ((x::d).rotl) (x::d):=by{
@@ -116,7 +119,11 @@ termination_by' {
 def movr(n:Digits)(a:Digit)(x:Digits)(d:Digit)(e:int):cyc:=
   if a = d then
     match h:n with
-    | ε => ⟨ε, (x::d).rotr, e + int.One, Digits.not_ε_append Digits.noConfusion _⟩
+    | ε =>
+      if x = ε ∧ d = (0) then
+        ⟨ε, ε::(0), int.Zero, Digits.noConfusion⟩
+      else
+        ⟨ε, (x::d).rotr, e + int.One, Digits.not_ε_append Digits.noConfusion _⟩
     | n'::b =>
       have h':(x::d).rotr ≠ ε:=Digits.not_ε_append Digits.noConfusion _
       have : n' <L n:=by rw[h]; exact Digits.len.lt_cons _ _
