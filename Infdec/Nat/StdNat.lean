@@ -305,5 +305,21 @@ theorem isStdNat_isZero_is_ε{x:Digits}(h0:x.isStdNat)(h1:x.isZero):x = ε:=by{
   exact h1
 }
 
+theorem toStdNat_ε_isZero{x:Digits}(h0:x.toStdNat = ε):x.isZero:=by{
+  have h0:x.toStdNat =N ε:=by rw[h0]; simp
+  exact nat_eq_zero_isZero' ((toStdNat_nat_eq x).symm.trans h0) ε_isZero
+}
+
+theorem isZero_iff_toStdNat_ε{x:Digits}:x.isZero ↔ x.toStdNat = ε:=
+  ⟨toStdNat.zero_to_nil,toStdNat_ε_isZero⟩
+
+theorem nat_eq_iff_toStdNat_eq{x y:Digits}:x =N y ↔ x.toStdNat = y.toStdNat:=
+  Iff.intro toStdNat_eq_of_nat_eq (by{
+    intro h
+    apply (toStdNat_nat_eq x).symm.trans
+    rw[h]
+    exact toStdNat_nat_eq y
+  })
+
 end Digits
 end wkmath

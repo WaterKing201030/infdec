@@ -81,6 +81,26 @@ theorem tails.cons_tails{x:Digits}(h:x≠ε)(d:Digit):(tails h).cons d = tails (
   }
 }
 
+theorem tails.append_tails{x:Digits}(h:x≠ε)(y:Digits):(tails h) ++ y = tails (not_ε_append h _:x ++ y ≠ ε):=by{
+  induction y with
+  | nil => simp
+  | cons y' _ ih => {
+    simp[append]
+    simp[←cons_tails (not_ε_append h _:x ++ y' ≠ ε)]
+    exact ih
+  }
+}
+
+theorem tails_len_lt{x:Digits}(h:x≠ε):tails h <L x:=by{
+  induction x with
+  | nil => contradiction
+  | cons x' d' ih => {
+    cases x' with
+    | nil => simp[tails, len.lt]
+    | cons x'' d'' => simp[tails, len.lt]; exact ih Digits.noConfusion
+  }
+}
+
 theorem append.tails(x:Digits)(d:Digit):tails (not_ε_append (ε::d).noConfusion x) = x := by{
   induction x with
   | nil => simp[append]; rw[tails]
@@ -191,6 +211,27 @@ theorem tails.recursion.{u}
       exact ind ih
     }
   }
+
+theorem head_of_head_append_tails(d:Digit)(x:Digits):head (not_ε_append Digits.noConfusion x:ε::d ++ x ≠ ε) = d:=by{
+  induction x with
+  | nil => simp[head]
+  | cons x' d' ih => {
+    simp[append]
+    rw[←head.cons_head (not_ε_append Digits.noConfusion x':ε::d ++ x' ≠ ε)]
+    exact ih
+  }
+}
+
+theorem tails_of_head_append_tails(d:Digit)(x:Digits):tails (not_ε_append Digits.noConfusion x:ε::d ++ x ≠ ε) = x:=by{
+  induction x with
+  | nil => simp[tails]
+  | cons x' d' ih => {
+    simp[append]
+    rw[←tails.cons_tails (not_ε_append Digits.noConfusion x':ε::d ++ x' ≠ ε)]
+    simp
+    exact ih
+  }
+}
 
 def isTails(y x:Digits):Prop:=
   if h:x=nil then
@@ -504,5 +545,18 @@ theorem padheadzero_len_eq{x y:Digits}(h:x ≤L y):padheadzero h =L y:=by{
     exact padheadzero'_len_eq h
   }
 }
+
+def heads{x:Digits}(_:x ≠ ε):Digits:=
+  match x with
+  | x'::_ => x'
+
+def tail{x:Digits}(_:x ≠ ε):Digit:=
+  match x with
+  | _::d => d
+
+theorem eq_heads_cons_tail{x:Digits}(h:x ≠ ε):(heads h)::(tail h) = x:=
+  match x with
+  | _::_ => rfl
+
 end Digits
 end wkmath

@@ -57,6 +57,9 @@ theorem eq_iff_toNat_eq{a b:Digit}:a = b ↔ a.toNat = b.toNat:=
   | two, zero
   | two, one => isFalse (fun h => Digit.noConfusion h)
 
+@[inline] instance instDecidableEqInst:DecidableEq Digit:=
+  λ _ _ => instDecidableEq
+
 end Digit
 
 inductive Digits
@@ -86,6 +89,12 @@ def toString:Digits → String
     have : Decidable (xt = yt) := Digit.instDecidableEq
     exact instDecidableAnd
   }
+
+theorem not_ε_exists_cons{x:Digits}(h:x ≠ ε):∃(x':Digits)(d:Digit), x = x'::d:=by{
+  match x with
+  | ε => contradiction
+  | x'::d => exact ⟨x', d, rfl⟩
+}
 
 end Digits
 

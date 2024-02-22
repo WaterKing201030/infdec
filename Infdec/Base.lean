@@ -32,6 +32,9 @@ theorem a1i{p:Prop}(h:∀ _:Sort u, p):p:=by {
   exact h PEmpty
 }
 
+theorem ProdEq{α:Type u}{β:Type v}{x y:α × β}(h:x = y):x.fst = y.fst ∧ x.snd = y.snd :=
+  ⟨congrArg Prod.fst h, congrArg Prod.snd h⟩
+
 theorem Nat.mul_ne_zero{x y:Nat}(h0:x ≠ 0)(h1:y ≠ 0):x * y ≠ 0:=by{
   match x, y with
   | x' + 1, y' + 1 => {

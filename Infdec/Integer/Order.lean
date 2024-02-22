@@ -575,5 +575,53 @@ theorem eq_zero_isZero'{x y:int}(h0:x =I y)(h1:y.isZero):x.isZero:=by
   have h0:=h0.symm
   apply eq_zero_isZero h0
   exact h1
+
+theorem eq_iff_toStdInt_eq{x y:int}:x =I y ↔ x.toStdInt = y.toStdInt:=by{
+  match x, y with
+  | ⟨x0, x1⟩, ⟨y0, y1⟩ => {
+    cases Decidable.em (x0.isZero) with
+    | inl h => {
+      rw[eq]
+      simp[h]
+      rw[toStdInt]
+      simp[h]
+      apply Iff.intro
+      . {
+        intro h'
+        rw[toStdInt]
+        simp[h']
+      }
+      . {
+        intro h'
+        have h':=h'.symm
+        rw[←isZero_iff_toStdInt_zero] at h'
+        rw[isZero] at h'
+        exact h'
+      }
+    }
+    | inr h => {
+      simp[eq, toStdInt, h]
+      apply Iff.intro
+      . {
+        intro h'
+        have h'':=Digits.nat_eq_not_zero_isnot_zero h h'.left
+        simp[h'']
+        exact ⟨Digits.nat_eq_iff_toStdNat_eq.mp h'.left,h'.right⟩
+      }
+      . {
+        intro h'
+        cases Decidable.em (y0.isZero) with
+        | inl h'' => {
+          simp[h''] at h'
+          exact (h (Digits.toStdNat_ε_isZero h'.left)).elim
+        }
+        | inr h'' => {
+          simp[h''] at h'
+          exact ⟨Digits.nat_eq_iff_toStdNat_eq.mpr h'.left, h'.right⟩
+        }
+      }
+    }
+  }
+}
 end int
 end wkmath
