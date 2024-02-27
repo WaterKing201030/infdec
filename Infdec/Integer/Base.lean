@@ -71,6 +71,20 @@ def isZero_iff_toStdInt_zero(x:int):x.isZero ↔ x.toStdInt = ⟨ε,false⟩:=by
     }
   }
 }
+
+theorem toStdInt.idemp(x:int):x.toStdInt.toStdInt = x.toStdInt:=by{
+  match x with
+  | ⟨s, b⟩ => {
+    cases Decidable.em (s.isZero) with
+    | inl h => simp[toStdInt, h]
+    | inr h => {
+      simp[toStdInt, h]
+      have h':¬s.toStdNat.isZero:=Digits.nat_eq_not_zero_isnot_zero' h (Digits.toStdNat_nat_eq _)
+      simp[h']
+      exact Digits.toStdNat.idemp _
+    }
+  }
+}
 end int
 
 def Digits.to_int(x:Digits):int:=⟨x, false⟩

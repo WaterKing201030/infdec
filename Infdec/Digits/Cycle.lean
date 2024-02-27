@@ -1078,5 +1078,11 @@ theorem replace_toNegOne_comm(x y:Digits):x.replace y.toNegOne = (x.replace y).t
   }
 }
 
+theorem Digit_minCyc(d:Digit):(ε::d).minCyc = ε::d:=by{
+  rw[minCyc, minCyc']
+  simp[isCycParent]
+  rw[minCyc']
+}
+
 end Digits
 end wkmath

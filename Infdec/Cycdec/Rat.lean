@@ -437,7 +437,17 @@ theorem movl_fraceq{x:Digits}(hn:x ≠ ε)(hc:x.minCyc = x)(e:int):⟨ε, x, e, 
       | ⟨i, true⟩
       | ⟨i, false⟩ => {
         simp[fraceq, toFrac, Frac.eq]
-        exact Nat.mul_comm _ _
+        cases Decidable.em (i.isZero) with
+        | inl h => {
+          simp[int.toStdInt, h, Digits.toOneBaseNat, Digits.zero_toOneBaseNat_is_ε]
+          exact Nat.mul_comm _ _
+        }
+        | inr h => {
+          simp[int.toStdInt, h]
+          have h':i.toOneBaseNat = i.toStdNat.toOneBaseNat:=Digits.toOneBaseNat_eq_of_nat_eq (Digits.toStdNat_nat_eq i).symm
+          rw[h']
+          exact Nat.mul_comm _ _
+        }
       }
     }
   }
@@ -566,7 +576,17 @@ theorem movl_fraceq{x:Digits}(hn:x ≠ ε)(hc:x.minCyc = x)(e:int):⟨ε, x, e, 
       | ⟨i, true⟩
       | ⟨i, false⟩ => {
         simp[fraceq, toFrac, Frac.eq]
-        exact Nat.mul_comm _ _
+        cases Decidable.em (i.isZero) with
+        | inl h => {
+          simp[int.toStdInt, h, Digits.toOneBaseNat, Digits.zero_toOneBaseNat_is_ε]
+          exact Nat.mul_comm _ _
+        }
+        | inr h => {
+          simp[int.toStdInt, h]
+          have h':i.toOneBaseNat = i.toStdNat.toOneBaseNat:=Digits.toOneBaseNat_eq_of_nat_eq (Digits.toStdNat_nat_eq i).symm
+          rw[h']
+          exact Nat.mul_comm _ _
+        }
       }
     }
   }
@@ -576,7 +596,7 @@ termination_by' {
   wf:=InvImage.wf (λ x:(_:Digits) ×' _ => x.fst) Digits.headzerocountLt.wf
 }
 
-theorem movr_fraceq{n x:Digits}(h0:n.isStdNat)(h1:n ≠ ε)(h2:x ≠ ε)(e:int):⟨n, x, e, h2⟩ =F movr h0 h1 h2 e:=by{
+theorem movr_fraceq{n x:Digits}(h0:n.isStdNat)(h1:n ≠ ε)(h2:x ≠ ε)(h3:x.minCyc = x)(e:int):⟨n, x, e, h2⟩ =F movr h0 h1 h2 h3 e:=by{
   rw[movr]
   cases Decidable.em (Digits.tail h1 = Digits.tail h2) with
   | inl h3 => {
@@ -782,11 +802,12 @@ theorem movr_fraceq{n x:Digits}(h0:n.isStdNat)(h1:n ≠ ε)(h2:x ≠ ε)(e:int):
       have h0':=Digits.isStdNat_heads_isStdNat h1 h0
       have h1':=h4
       have h2':x.rotr ≠ ε:=by{rw[Digits.rotr_iff_rotr', Digits.rotr'];simp[h2];exact Digits.not_ε_append Digits.noConfusion _}
+      have h3':=Digits.minCyc_rotr_minCyc (by assumption:Digits.minCyc x = x)
       have : (Digits.heads h1) <L n:=by{
         match n with
         | _::_ => simp[Digits.heads]; exact Digits.len.lt_cons _ _
       }
-      apply λ h => fraceq.trans h (movr_fraceq h0' h1' h2' (e + int.One).toStdInt)
+      apply λ h => fraceq.trans h (movr_fraceq h0' h1' h2' h3' (e + int.One).toStdInt)
       apply (toStdInt_fraceq n e h2).trans
       apply fraceq.symm
       apply (exp_int_eq_fraceq _ _ (int.add_toStdInt_eq_toStdInt_add _ _)).trans
@@ -910,6 +931,7 @@ theorem movr_fraceq{n x:Digits}(h0:n.isStdNat)(h1:n ≠ ε)(h2:x ≠ ε)(e:int):
   }
   | inr h3 => {
     simp[h3]
+    apply (exp_int_eq_fraceq _ _ (int.toStdInt_eq e)).symm.trans
     exact fraceq.refl _
   }
 }
@@ -918,12 +940,35 @@ termination_by' {
   wf:=InvImage.wf (λ x:(_:Digits) ×' _ => x.fst) Digits.len.lt.wf
 }
 
-theorem toStdCyc_fraceq(x:cyc):x.toStdCyc =F x:=by{
-  
+theorem toStdCyc_fraceq(c:cyc):c.toStdCyc =F c:=by{
+  match c with
+  | ⟨n, x, e, h⟩ => {
+    simp[toStdCyc]
+    apply fraceq.symm
+    apply (toStdNat_fraceq _ _ _).trans
+    apply (toStdInt_fraceq _ _ _).trans
+    apply (minCyc_fraceq _ _ _).trans
+    apply fraceq.symm
+    cases Decidable.em (n.toStdNat = ε) with
+    | inl h' => {
+      simp[h']
+      apply (movl_fraceq _ _ e.toStdInt).symm.trans
+      exact fraceq.refl _
+    }
+    | inr h' => {
+      simp[h']
+      apply (movr_fraceq _ _ _ _ _).symm.trans
+      exact fraceq.refl _
+    }
+  }
 }
 
-theorem toFrac_fraceq_of_cyc_eq{x y:cyc}(h:x =C y):x.toFrac =F y.toFrac:=by{
-  admit
+theorem fraceq_of_cyc_eq{x y:cyc}(h:x =C y):x =F y:=by{
+  have h0:=toStdCyc_fraceq x
+  have h1:=toStdCyc_fraceq y
+  rw[eq] at h
+  rw[h] at h0
+  exact h0.symm.trans h1
 }
 end cyc
 end wkmath
