@@ -180,6 +180,20 @@ theorem Nat.le_iff_eq_or_lt{x y:Nat}:x ≤ y ↔ x = y ∨ x < y := by{
   exact h.elim (λ h => Nat.le_of_eq h) (λ h => Nat.le_of_lt h)
 }
 
+theorem Nat.lt_or_gt_of_ne{a b:Nat}(h:a ≠ b):a < b ∨ b < a :=by{
+  have h0:=Nat.le_total a b
+  simp[le_iff_eq_or_lt] at h0
+  simp[h] at h0
+  simp[h.symm] at h0
+  exact h0
+}
+
+theorem Nat.ne_zero_iff_gt_zero{x:Nat}:x ≠ 0 ↔ 0 < x:=by{
+  match x with
+  | 0
+  | succ n => simp[zero_lt_succ]
+}
+
 theorem Acc.prod_fst{α:Type u}{β:Type v}{r:α → α → Prop}{x:α}{y:β}(h:Acc r x):Acc (λ (a b:α × β) => r a.fst b.fst) (x, y):=by{
   have {x:α}{y y':β}(h:Acc (λ (a b:α × β) => r a.fst b.fst) (x, y)):Acc (λ (a b:α × β) => r a.fst b.fst) (x, y'):=by{
     apply Acc.intro

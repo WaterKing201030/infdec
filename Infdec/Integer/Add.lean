@@ -339,5 +339,28 @@ theorem add_congr{x y z w:int}(h0:x =I z)(h1:y =I w):x + y =I z + w:=by{
     }
   }
 }
+
+theorem sub_congr{x y z w:int}(h0:x =I y)(h1:z =I w):x - z =I y - w:=by{
+  simp[sub]
+  have h1:=neg_eq_of_eq h1
+  exact add_congr h0 h1
+}
+
+theorem sub_add_comm(x y z:int):x - y + z =I x + z - y:=by{
+  simp[sub]
+  exact ((add.assoc _ _ _).trans (add_congr (eq.refl x) (add.comm y.neg z))).trans (add.assoc _ _ _).symm
+}
+
+theorem add_sub_cancel(x y:int):x + y - y =I x:=
+  (add.assoc _ _ _).trans (add_zero x (add_neg_eq_zero y))
+
+theorem sub_add_cancel(x y:int):x - y + y =I x:=
+  (sub_add_comm _ _ _).trans (add_sub_cancel _ _)
+
+theorem add_toStdInt_eq_toStdInt_add(x y:int):(x + y).toStdInt =I (x.toStdInt) + y.toStdInt:=
+  (toStdInt_eq (x + y)).trans (add_congr (toStdInt_eq x).symm (toStdInt_eq y).symm)
+
+theorem sub_toStdInt_eq_toStdInt_sub(x y:int):(x - y).toStdInt =I x.toStdInt - y.toStdInt:=
+  (add_toStdInt_eq_toStdInt_add x (-y)).trans (add_congr (eq.refl _) (neg_toStdInt_eq_toStdInt_neg y))
 end int
 end wkmath

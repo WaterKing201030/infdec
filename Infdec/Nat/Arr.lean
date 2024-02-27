@@ -153,5 +153,91 @@ theorem slice_cutTails_not_zero_sum_lt{x y:Digits}(h0:y ≠ ε)(h1:¬(cutTails x
     exact slice_sum_le _ h0
   }
 }
+
+theorem padtailzero_nat_eq_mul_one_pad_zero(x:Digits){y:Digits}(h:y.isZero):x ++ y =N x * (ε::(1) ++ y):=by{
+  induction y with
+  | nil => simp; exact (mul_One_nat_eq x).symm
+  | cons y' d ih => {
+    rw[isZero] at h
+    rw[h.right]
+    rw[append]
+    have ih:=ih h.left
+    rw[append, mul]
+    rw[mul'.mul'_zero_carry_zero]
+    apply λ h => nat.eq.trans h (nat.add_zero (toZero_isZero x)).symm
+    simp[nat.eq]
+    exact ih
+  }
+}
+
+theorem replace_eq_mul_one_zero_cycle(x y:Digits):x.replace y =N y * (x.replace (y.toZero + (ε::(1)))):=by{
+  match x with
+  | ε => simp[replace]; exact zero_nat_eq_zero ε_isZero (mul.mul_zero y ε_isZero)
+  | x'::d => {
+    rw[replace, replace]
+    have h1:=cutTails_padtailzero_add_getTails_nat_eq (x'.replace y ++ y) y
+    simp[append_cutTails_cancel, append_getTails] at h1
+    apply h1.symm.trans
+    apply nat.eq.symm
+    have h2:=mul.left_congr y (cutTails_padtailzero_add_getTails_nat_eq (x'.replace (y.toZero + ε::(1)) ++ (y.toZero + ε::(1))) (y.toZero + ε::(1)))
+    simp[append_cutTails_cancel, append_getTails] at h2
+    apply h2.symm.trans
+    apply (mul.right_distrib _ _ _).trans
+    have h3:y * (toZero y + ε :: (1) ) =N y:=by{
+      apply (mul.right_distrib _ _ _).trans
+      apply (nat.zero_add (mul.mul_zero _ (toZero_isZero _))).trans
+      exact mul_One_nat_eq _
+    }
+    apply λ h => nat.eq_of_eq_add_eq h h3
+    have h4:=replace_eq_mul_one_zero_cycle x' y
+    match y with
+    | ε => {
+      apply (zero_nat_eq_zero (mul.zero_mul ε_isZero _) ε_isZero).trans
+      simp[replace_ε, toZero]
+    }
+    | y'::d' => {
+      simp[toZero]
+      simp[add, add', add'', Digit.half_add3]
+      simp[toZero.idemp]
+      have h5:(y'.toZero::(0)).isZero:=by simp[isZero]; exact toZero_isZero _
+      apply (mul.left_congr (y'::d') (padtailzero_nat_eq_mul_one_pad_zero _ h5)).trans
+      apply (mul.assoc _ _ _).symm.trans
+      apply nat.eq.symm
+      apply (padtailzero_nat_eq_mul_one_pad_zero _ h5).trans
+      apply mul.right_congr
+      simp[add, add', add'', Digit.half_add3] at h4
+      exact h4
+    }
+  }
+}
+
+theorem toNegOne_add_One_eq_one_pad_zero(x:Digits):x.toNegOne + One = ε::(1) ++ x.toZero:=by{
+  match x with
+  | ε => {
+    simp[toNegOne, toZero]
+    rfl
+  }
+  | x'::d => {
+    simp[toNegOne, toZero, One]
+    simp[add, add', Digit.half_add3, append]
+    rw[←add_One_eq_add''_one]
+    exact toNegOne_add_One_eq_one_pad_zero x'
+  }
+}
+
+theorem one_pad_zero_mul_two_nat_eq_two_pad_zero{x:Digits}(h:x.isZero):(ε::(1) ++ x) * (ε::(2)) =N ε::(2) ++ x:=by{
+  induction x with
+  | nil => simp
+  | cons _ _ ih => {
+    simp[isZero] at h
+    have ih:=ih h.left
+    simp[append, h.right]
+    simp[mul, mul', Digit.mul_add3]
+    apply (nat.zero_add (by{simp}:(ε::(0)).isZero)).trans
+    simp[nat.eq]
+    simp[mul] at ih
+    exact (nat.zero_add (by{simp}:(ε::(0)).isZero)).symm.trans ih
+  }
+}
 end Digits
 end wkmath

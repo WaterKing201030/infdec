@@ -642,5 +642,49 @@ theorem toStdInt_eq(x:int):x.toStdInt =I x:=by{
     }
   }
 }
+
+theorem neg_eq_of_eq{x y:int}(h:x =I y):x.neg =I y.neg:=by{
+  match x, y with
+  | ⟨x, true⟩, ⟨y, true⟩
+  | ⟨x, false⟩, ⟨y, false⟩ => {
+    simp[neg]
+    apply λ h => same_sign_nat_eq_to_eq
+    . {
+      simp
+      apply same_sign_eq_to_nat_eq h
+      simp
+    }
+    . simp
+  }
+  | ⟨x, false⟩, ⟨y, true⟩
+  | ⟨x, true⟩, ⟨y, false⟩ => {
+    simp[neg]
+    have h:=notsame_sign_eq_to_zero h
+    simp at h
+    simp[eq, h.left]
+    exact h.right
+  }
+}
+
+theorem eq_of_neg_eq{x y:int}(h:-x =I -y):x =I y:=by{
+  have h:=neg_eq_of_eq h
+  simp[neg.inv] at h
+  exact h
+}
+
+theorem neg_toStdInt_eq_toStdInt_neg(x:int):(-x).toStdInt =I -x.toStdInt:=by{
+  match x with
+  | ⟨x, true⟩
+  | ⟨x, false⟩ => {
+    cases Decidable.em (x.isZero) with
+    | inl h => {
+      simp[neg, toStdInt, h]
+    }
+    | inr h => {
+      simp[neg, toStdInt, h]
+      exact eq.refl _
+    }
+  }
+}
 end int
 end wkmath

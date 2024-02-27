@@ -37,6 +37,18 @@ def toStdInt(x:int):int:=
     else
       ⟨s.toStdNat, b⟩
 
+theorem Zero_toStdInt:Zero.toStdInt = Zero:=by simp[toStdInt, Zero]
+theorem One_toStdInt:One.toStdInt = One:=by{
+  simp[toStdInt, One]
+  rw[Digits.toStdNat]
+  simp[Digits.head, Digits.tails]
+}
+theorem NegOne_toStdInt:NegOne.toStdInt = NegOne:=by{
+  simp[toStdInt, NegOne]
+  rw[Digits.toStdNat]
+  simp[Digits.head, Digits.tails]
+}
+
 def isZero_iff_toStdInt_zero(x:int):x.isZero ↔ x.toStdInt = ⟨ε,false⟩:=by{
   match x with
   | ⟨x0, x1⟩ => {

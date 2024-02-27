@@ -1,4 +1,5 @@
 import Infdec.Digits.Tails
+import Infdec.Digits.NegOne
 
 namespace wkmath
 namespace Digits
@@ -843,15 +844,6 @@ theorem tails_isPostfixOf{x:Digits}(h:x ≠ ε):(tails h).isPostfixOf x:=by{
   }
 }
 
--- Definition:
--- P:Nat → Nat → Prop
--- ∀ x, P x x; P x y → P y x → x = y; P x y → P y z → P x z (Partial Order)
--- minP(y, z):match z with | 0 => y | succ z' => if P x y then y else minP(x, y.succ, z')
--- Assumption:
--- P x n
--- Target:
--- minP(0, x) ≤ y
-
 theorem isPostfixOf_len_le_isPostfixOf{x y z:Digits}(h0:y.isPostfixOf x)(h1:z.isPostfixOf x)(h2:z ≤L y):z.isPostfixOf y:=by{
   match x, y, z with
   | ε, _::_, _
@@ -1065,6 +1057,26 @@ theorem minCyc_head_eq_head{x:Digits}(h:x ≠ ε):head (not_ε_minCyc_not_ε h:x
 
 theorem ε_minCyc_ε{x:Digits}(h:x.minCyc = ε):x = ε:=
   (Decidable.em (x = ε)).elim id (λ h' => (not_ε_minCyc_not_ε h' h).elim)
+
+theorem replace_toZero_comm(x y:Digits):x.replace y.toZero = (x.replace y).toZero:=by{
+  induction x with
+  | nil => simp[replace]
+  | cons _ _ ih => {
+    simp[replace] at *
+    rw[append_toZero_eq_toZero_append]
+    rw[ih]
+  }
+}
+
+theorem replace_toNegOne_comm(x y:Digits):x.replace y.toNegOne = (x.replace y).toNegOne:=by{
+  induction x with
+  | nil => simp[replace]
+  | cons _ _ ih => {
+    simp[replace] at *
+    rw[append_toNegOne_eq_toNegOne_append]
+    rw[ih]
+  }
+}
 
 end Digits
 end wkmath

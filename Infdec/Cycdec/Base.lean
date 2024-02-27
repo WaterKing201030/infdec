@@ -125,7 +125,6 @@ termination_by' {
   wf:=InvImage.wf (λ x:(_:Digits) ×' _ => x.fst) Digits.headzerocountLt.wf
 }
 
--- 这个得改成movl一样的参数
 def movr{n x:Digits}(h0:n.isStdNat)(h1:n ≠ ε)(h2:x ≠ ε)(e:int):cyc:=
   if (Digits.tail h1) = (Digits.tail h2) then
     if h:(Digits.heads h1) = ε then
