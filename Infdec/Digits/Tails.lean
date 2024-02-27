@@ -462,6 +462,20 @@ theorem getTails_len_le(x y:Digits):getTails x y ≤L y:=
     exact h
   }) (λ h => (getTails_long_len_eq h.to_le).to_le)
 
+theorem getTails_ε(x:Digits):x.getTails ε = ε:=by{
+  match x with
+  | ε | _::_ => simp[getTails]
+}
+
+theorem append_getTails(x y:Digits):(x ++ y).getTails y = y:=by{
+  induction y with
+  | nil => simp[getTails_ε]
+  | cons _ _ ih => {
+    simp[getTails]
+    exact ih
+  }
+}
+
 theorem cutTails_append_getTails(x y:Digits):(cutTails x y)++(getTails x y) = x:=
   match x, y with
   | ε, ε

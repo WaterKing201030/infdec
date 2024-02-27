@@ -193,5 +193,11 @@ theorem triple_zero_cons_zero_eq_triple_zero_cons_three_zero{x:Digits}(h:x.isZer
   }
 }
 
+theorem append_toZero_eq_toZero_append(x y:Digits):(x ++ y).toZero = x.toZero ++ y.toZero:=by{
+  induction y with
+  | nil => simp[toZero]
+  | cons _ _ ih => simp[toZero, append]; exact ih
+}
+
 end Digits
 end wkmath

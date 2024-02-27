@@ -33,5 +33,23 @@ theorem not_ε_toNegOne_not_ε{x:Digits}:x ≠ ε ↔ x.toNegOne ≠ ε:=by{
   . exact λ _ => match x with | _::_ => by simp[toNegOne]
   . exact λ h => match x with | ε => by simp[toNegOne] at h | _::_ => by simp
 }
+
+theorem toNegOne_toZero_eq_toZero(x:Digits):x.toNegOne.toZero = x.toZero:=by{
+  induction x with
+  | nil => simp
+  | cons _ _ ih => simp[toZero, toNegOne]; exact ih
+}
+
+theorem toZero_toNegOne_eq_toNegOne(x:Digits):x.toZero.toNegOne = x.toNegOne:=by{
+  induction x with
+  | nil => simp
+  | cons _ _ ih => simp[toZero, toNegOne]; exact ih
+}
+
+theorem append_toNegOne_eq_toNegOne_append(x y:Digits):(x ++ y).toNegOne = x.toNegOne ++ y.toNegOne:=by{
+  induction y with
+  | nil => simp[toNegOne]
+  | cons _ _ ih => simp[toNegOne, append]; exact ih
+}
 end Digits
 end wkmath

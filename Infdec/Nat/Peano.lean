@@ -54,6 +54,9 @@ theorem zero_lt_Succ{x:Digits}(h:x.isZero)(y:Digits):x < y.Succ:=by{
 theorem ε_lt_Succ(x:Digits):ε < x.Succ:=
   zero_lt_Succ ε_isZero x
 
+theorem succ_congr{x y:Digits}(h:x =N y):x.Succ =N y.Succ:=
+  nat.eq_of_eq_add_eq h (nat.eq.refl _)
+
 theorem succ_cancel{x y:Digits}(h:x.Succ =N y.Succ):x =N y:=
   nat.add_right_cancel h (nat.eq.refl _)
 
@@ -633,5 +636,35 @@ theorem le_iff_toNat_le{x y:Digits}:x ≤ y ↔ x.toNat ≤ y.toNat:=by{
   rw[lt_iff_toNat_lt]
   exact Nat.le_iff_eq_or_lt.symm
 }
+
+theorem eq_iff_succ_eq_succ{x y:Digits}:x =N y ↔ x.Succ =N y.Succ:=
+  ⟨succ_congr,peano_3⟩
+
+theorem lt_iff_succ_lt_succ{x y:Digits}:x < y ↔ x.Succ < y.Succ:=
+  ⟨λ h => nat.lt_of_add_left_lt h One,nat.add_left_lt_of_lt⟩
+
+theorem le_iff_succ_le_succ{x y:Digits}:x ≤ y ↔ x.Succ ≤ y.Succ:=
+  ⟨λ h => nat.le_of_add_left_le h One,nat.add_left_le_of_le⟩
+
+theorem isZero_iff_lt_One{x:Digits}:x.isZero ↔ x < One:=by{
+  rw[One_eq_Zero_Succ]
+  rw[nat.lt_iff_Succ_le]
+  apply Iff.intro
+  . {
+    intro h
+    rw[nat.le_iff_eq_or_lt]
+    apply Or.inl
+    exact succ_congr (zero_nat_eq_zero h Zero_is_zero)
+  }
+  . {
+    intro h
+    have h:=le_iff_succ_le_succ.mpr h
+    exact nat.le_zero_isZero h Zero_is_zero
+  }
+}
+
+theorem Digit_toNat_eq_Digits_toNat(d:Digit):d.toNat = (ε::d).toNat:=
+  match d with
+  | (0) | (1) | (2) => rfl
 end Digits
 end wkmath

@@ -37,6 +37,18 @@ def toStdInt(x:int):int:=
     else
       ⟨s.toStdNat, b⟩
 
+theorem Zero_toStdInt:Zero.toStdInt = Zero:=by simp[toStdInt, Zero]
+theorem One_toStdInt:One.toStdInt = One:=by{
+  simp[toStdInt, One]
+  rw[Digits.toStdNat]
+  simp[Digits.head, Digits.tails]
+}
+theorem NegOne_toStdInt:NegOne.toStdInt = NegOne:=by{
+  simp[toStdInt, NegOne]
+  rw[Digits.toStdNat]
+  simp[Digits.head, Digits.tails]
+}
+
 def isZero_iff_toStdInt_zero(x:int):x.isZero ↔ x.toStdInt = ⟨ε,false⟩:=by{
   match x with
   | ⟨x0, x1⟩ => {
@@ -56,6 +68,20 @@ def isZero_iff_toStdInt_zero(x:int):x.isZero ↔ x.toStdInt = ⟨ε,false⟩:=by
         simp[h'] at h
         exact Digits.toStdNat_ε_isZero h.left
       }
+    }
+  }
+}
+
+theorem toStdInt.idemp(x:int):x.toStdInt.toStdInt = x.toStdInt:=by{
+  match x with
+  | ⟨s, b⟩ => {
+    cases Decidable.em (s.isZero) with
+    | inl h => simp[toStdInt, h]
+    | inr h => {
+      simp[toStdInt, h]
+      have h':¬s.toStdNat.isZero:=Digits.nat_eq_not_zero_isnot_zero' h (Digits.toStdNat_nat_eq _)
+      simp[h']
+      exact Digits.toStdNat.idemp _
     }
   }
 }
